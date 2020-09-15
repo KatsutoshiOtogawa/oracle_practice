@@ -39,17 +39,24 @@ sudo su
 ```
 として管理者権限でvagrantに入り、下記のコマンドを実行してください。
 ```
-cd vagrant_oracle_dev_setup
-bash install.sh >log.txt 2> error.txt
+cd /vagrant_oracle_dev_setup
+sudo bash install.sh > log.txt 2>&1
 ```
-
-
 仮想環境に無償版のoracle　Database Express Edition,Oracle Javaが \
 インストールされます。
 
+下記のコマンドを実行して、環境変数を反映させます。
+```
+source ~/.bash_profile
+```
+
 # oracleへの接続確認
 
-
+vagrantユーザーで下のコマンドを実行してください。
+```
+lsnrctl status
+```
+XEインスタンスの構成が表示されることが確認されるはずです。
 # これから先
 vagrantでoracleのポートをホスト側のポートに紐づけてあるので、 \
 ホスト側のosからも接続することができます。 \
@@ -57,5 +64,6 @@ vagrantでoracleのポートをホスト側のポートに紐づけてあるの�
 # refference
 [oracleドキュメント](https://docs.oracle.com/cd/E96517_01/xeinl/index.html?xd_co_f=9ac774b5-e809-4f8f-af78-817d43ef4782)
 
-
 [Javaドキュメント](https://www.oracle.com/java/technologies/javase-jdk11-doc-downloads.html)
+
+[Oracle Linux Vagrant](https://yum.oracle.com/boxes/)

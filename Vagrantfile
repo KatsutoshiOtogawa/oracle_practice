@@ -12,9 +12,12 @@ Vagrant.configure("2") do |config|
   
     # Every Vagrant development environment requires a box. You can search for
     # boxes at https://vagrantcloud.com/search.
-    config.vm.box = "centos/7"
-    config.vm.box_version = "2004.01"
-  
+    config.vm.box = "oraclelinux/7"
+
+    # The url from where the 'config.vm.box' box will be fetched if it
+    # doesn't already exist on the user's system.
+    config.vm.box_url = "https://oracle.github.io/vagrant-projects/boxes/oraclelinux/7.json"
+
     # Disable automatic box update checking. If you disable this, then
     # boxes will only be checked for updates when the user runs
     # `vagrant box outdated`. This is not recommended.
@@ -26,6 +29,9 @@ Vagrant.configure("2") do |config|
     # NOTE: This will enable public access to the opened port
     # config.vm.network "forwarded_port", guest: 3000, host: 3000
     config.vm.network "forwarded_port", guest: 1521, host: 1521
+    config.vm.network "forwarded_port", guest: 5500, host: 5500
+
+    config.vm.network "forwarded_port", guest: 80, host: 8080
   
     # Create a forwarded port mapping which allows access to a specific port
     # within the machine from a port on the host machine and only allow access
@@ -70,8 +76,31 @@ Vagrant.configure("2") do |config|
       # 日本語ロケールを追加しておく。追加しないとエラー。
       localedef -f UTF-8 -i ja_JP ja_JP
 
-      curl -o oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
-      yum -y localinstall oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
+      # webサーバーインストール
+      yum install -y nginx
+
+      # SELinux,firewalldの初期状態の確認
+      echo SELinux status is ...
+      getenforce
+      echo firewalld status is ...
+      systemctl enable firewalld
+      systemctl start firewalld
+      firewall-cmd --list-all
+
+      # hostosからguestosの通信で指定のポートを開けておく。
+      firewall-cmd --add-port=1521/tcp --zone=public --permanent
+      firewall-cmd --add-port=5500/tcp --zone=public --permanent
+      firewall-cmd --add-service=http --zone=public --permanent
+      firewall-cmd --add-service=https --zone=public --permanent
+
+      # リバースプロキシの設定方法https://gobuffalo.io/en/docs/deploy/proxy
+      # nginxのリバースプロキシを使う場合に必要なselinuxの設定
+      setsebool -P httpd_can_network_connect on
+      setsebool -P httpd_can_network_relay on
+
+      # oracle linuxでは不要
+      # curl -o oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
+      # yum -y localinstall oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
     SHELL
   end
   

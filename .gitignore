@@ -1,3 +1,4 @@
 .DS_Store
 .vagrant
 oracle_dev_setup/package
+oracle_dev_setup/log.txt
