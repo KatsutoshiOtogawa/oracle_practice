@@ -75,7 +75,8 @@ test_table.sh
 jarファイルをプロジェクト配下のtestconnection/jarフォルダに入れてください。 \
 [Oracle jdbcドライバ](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html)
 
-vagrantユーザーで下記のコマンドを実行してください。
+vagrantユーザーで下記のコマンドを実行してください。 \
+javaからoracleに接続してtableの内容を取得できるはずです。
 ```
 cd /home/vagrant/testconnection
 gradle run
