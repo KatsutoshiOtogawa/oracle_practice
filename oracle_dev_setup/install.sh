@@ -7,10 +7,16 @@ ORACLE_PASSWWORD=password
 # oracle
 mkdir /xe_logs 
 yum -y localinstall package/oracle-database-xe-18c-1.0-1.x86_64.rpm > /xe_logs/XEsilentinstall.log 2>&1
+sed -i 's/LISTENER_PORT=/LISTENER_PORT=1521/' /etc/sysconfig/oracle-xe-18c.conf
 (echo $ORACLE_PASSWWORD; echo $ORACLE_PASSWWORD;) | /etc/init.d/oracle-xe-18c configure >> /xe_logs/XEsilentinstall.log 2>&1
 
 # java
 yum -y localinstall package/jdk-11.0.8_linux-x64_bin.rpm
+
+# skdmanからgradleをインストール
+curl -s "https://get.sdkman.io" | bash
+su - vagrant -c 'echo source $HOME/.sdkman/bin/sdkman-init.sh >> ~/.bash_profile'
+su - vagrant -c "sdk install gradle"
 
 # instanceの接続先の設定
 su - vagrant -c "echo export ORACLE_SID=XE >> .bash_profile"

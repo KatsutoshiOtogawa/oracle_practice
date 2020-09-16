@@ -70,6 +70,17 @@ cd /home/vagrant/oracle_data_load
 test_table.sh
 ```
 
+# java からoracleを参照
+下記のサイトからojdbc8-full.tar.gzファイルをダウンロード、解凍して \
+中のjarファイルをプロジェクト配下のtestconnection/jarフォルダに入れてください。
+[Oracle jdbcドライバ](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html)
+
+vagrantユーザーで下記のコマンドを実行してください。
+```
+cd /home/vagrant/testconnection
+gradle run
+```
+
 # これから先
 vagrantでoracleのポートをホスト側のポートに紐づけてあるので、 \
 ホスト側のosからも接続することができます。 \
@@ -82,3 +93,6 @@ sqlplusとBasic Packageをダウンロード \
 [Javaドキュメント](https://www.oracle.com/java/technologies/javase-jdk11-doc-downloads.html)
 
 [Oracle Linux Vagrant](https://yum.oracle.com/boxes/)
+
+[JavaからOracleへの接続](https://www.oracle.com/jp/database/technologies/develop-java-apps-using-jdbc.html)
+

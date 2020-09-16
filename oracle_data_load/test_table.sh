@@ -3,7 +3,7 @@
 ORACLE_PASSWWORD=password
 csv=test_table.csv
 touch $csv
-row=200
+row=1000
 
 seq 1 $row | xargs -n 1 names > $csv
 
