@@ -30,7 +30,6 @@ Vagrant.configure("2") do |config|
     # config.vm.network "forwarded_port", guest: 3000, host: 3000
     config.vm.network "forwarded_port", guest: 1521, host: 1521
     config.vm.network "forwarded_port", guest: 5500, host: 5500
-
     config.vm.network "forwarded_port", guest: 80, host: 8080
   
     # Create a forwarded port mapping which allows access to a specific port
@@ -52,7 +51,10 @@ Vagrant.configure("2") do |config|
     # the path on the guest to mount the folder. And the optional third
     # argument is a set of non-required options.
     config.vm.synced_folder "./oracle_dev_setup", "/vagrant_oracle_dev_setup", type:"virtualbox"
-  
+    config.vm.synced_folder "./oracle_data_load", "/home/vagrant/oracle_data_load", type:"virtualbox"
+    config.vm.synced_folder "./testconnection", "/home/vagrant/testconnection", type:"virtualbox"
+    config.vm.synced_folder "./app", "/home/vagrant/app", type:"virtualbox"
+
     # Provider-specific configuration so you can fine-tune various
     # backing providers for Vagrant. These expose provider-specific options.
     # Example for VirtualBox:
@@ -97,6 +99,10 @@ Vagrant.configure("2") do |config|
       # nginxのリバースプロキシを使う場合に必要なselinuxの設定
       setsebool -P httpd_can_network_connect on
       setsebool -P httpd_can_network_relay on
+
+      # test用テーブルデータ放り込み用ライブラリ
+      yum install -y python3-pip
+      pip3 install names
 
       # oracle linuxでは不要
       # curl -o oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
