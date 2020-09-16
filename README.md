@@ -72,8 +72,8 @@ test_table.sh
 
 # java からoracleを参照
 下記のサイトからojdbc8-full.tar.gzファイルをダウンロード、解凍して中の \
-jarファイルをプロジェクト配下のtestconnection/jarフォルダに入れてください。
-[Oracle jdbcドライバ](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html) \
+jarファイルをプロジェクト配下のtestconnection/jarフォルダに入れてください。 \
+[Oracle jdbcドライバ](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html)
 
 vagrantユーザーで下記のコマンドを実行してください。
 ```
