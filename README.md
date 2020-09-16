@@ -14,10 +14,10 @@ Oracle Java, Oracle Database Express Editionは20200915日 \
 
 # 使い方
 ## 準備
-Oracleのサイトから \
-rpm,Linuxと書かれているパッケージをダウンロードして、プロジェクトにある \ oracle_dev_setup/packageにファイルをおいてください。 \
+Oracleのサイトからrpm,Linuxと書かれているパッケージをダウンロードして、
+プロジェクトにあるoracle_dev_setup/packageにファイルをおいてください。 \
 [Oracle Database Express](https://www.oracle.com/database/technologies/xe-downloads.html) \
-[Java 11(LTS)](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) \
+[Java 11(LTS)](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
 ## OSインストール
 プロジェクト配下で下記のコマンドを実行してOSのインストールを行ってください。
 ```
@@ -58,7 +58,7 @@ XEインスタンスの構成が表示されることが確認されるはずで
 
 # sqlplusに接続してみる
 下記のコマンドを実行するとsystemユーザーでログインできます。 \
-sqlplusから抜けるときはquitと実行してください。 \
+sqlplusから抜けるときはquitと実行してください。
 ```
 sqlplus system/password
 ```
@@ -71,9 +71,9 @@ test_table.sh
 ```
 
 # java からoracleを参照
-下記のサイトからojdbc8-full.tar.gzファイルをダウンロード、解凍して \
-中のjarファイルをプロジェクト配下のtestconnection/jarフォルダに入れてください。
-[Oracle jdbcドライバ](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html)
+下記のサイトからojdbc8-full.tar.gzファイルをダウンロード、解凍して中の \
+jarファイルをプロジェクト配下のtestconnection/jarフォルダに入れてください。
+[Oracle jdbcドライバ](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html) \
 
 vagrantユーザーで下記のコマンドを実行してください。
 ```
@@ -84,7 +84,7 @@ gradle run
 # これから先
 vagrantでoracleのポートをホスト側のポートに紐づけてあるので、 \
 ホスト側のosからも接続することができます。 \
-下記のファイルをホスト側でインストールすると接続できるようになるので試してみてください。 ＼
+下記のファイルをホスト側でインストールすると接続できるようになるので試してみてください。 \
 sqlplusとBasic Packageをダウンロード \
 [Oracle Instance Client](https://www.oracle.com/database/technologies/instant-client/linux-x86-64-downloads.html)
 # refference
