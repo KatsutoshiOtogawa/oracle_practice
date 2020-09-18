@@ -67,7 +67,7 @@ vagrantユーザーで以下のコマンドを実行してください。 \
 test_tableにデータがインポートされます。
 ```
 cd /home/vagrant/oracle_data_load
-test_table.sh
+bash test_table.sh
 ```
 
 # java からoracleを参照
@@ -81,6 +81,68 @@ javaからoracleに接続してtableの内容を取得できるはずです。
 cd /home/vagrant/testconnection
 gradle run
 ```
+# pythonからoracleを参照
+一番簡単。速度が要求されない分析などではこれが一番賢い選択だと思われる。
+```
+cd /home/vagrant/python3/testconnection
+pipenv install
+pipenv run python3 main.py
+```
+だけでテストすることができる。
+
+# golangからoracleを参照
+有志の人がライブラリを作っているのでそれを使って接続。 \
+golangからclangのライブラリを読んで接続している。 \
+そのため、共有ライブラリ、ヘッダーへのパスを通す必要がある。 \
+面倒臭かった。 \
+Oracleに接続してSQLを操作するためだけにgolangを選択するメリットはないだろう。 \
+コードとしてはjavaより簡単でpythonより面倒臭い程度か。 \
+もし本番環境でやる場合はoracle_dev_setup/install.shにあるコードを参考に書くと良い。 \
+本プロジェクトではコンパイル、extension追加まで自動化してあるので、
+```
+cd /home/vagrant/golang/testconnection
+go install
+go run main.go
+```
+だけでテストすることができる。
+
+# phpからOracleを参照。
+golangよりも面倒臭い。 \
+phpからoracleに接続するためにoci8をインストールする必要があるが、 \
+Oracelのclientのバージョンと、yumで入るociのバージョンが \
+違うとコンパイルする必要がある。 \
+もし本番環境でやる場合はoracle_dev_setup/install.shにあるコードを参考に書くと良い。 \
+本プロジェクトではコンパイル、extension追加まで自動化してあるので、
+```
+cd /home/vagrant/php/testconnection
+php main.php
+```
+だけでテストすることができる。
+
+# rustからoracleを参照
+思ったよりはるかに簡単だった。 \
+oracleでSQL使ったバッチ処理ならgolangよりrustの方がいいかもしれない。 \
+懸念点としたらrustはgolangに比べて若い言語なため安定していない可能性があること、 \
+ライブラリのメジャー番号が1を迎えていないことだ。 \
+golangより低いレイヤーよりの処理。golangよりも自由度が高く、C言語の黒魔術的な考え方が応用できる。 \
+golangよりも言語としての習得難易度は高い。これらが差別化ポイントか。
+
+# rlangからoracleを参照
+検索するとR Oracle Enterpriseがよく出るが、\
+別に外部からrlangを使うだけならODBCから普通に接続できる。 \
+pythonとの差別化だが、分析においてクエリの結果に対して複雑な加工処理をしない限り、 \
+rlangの方が楽だと思われる。
+
+# jrubyからoracleを参照
+
+# jythonからoracleを参照
+
+
+# 結論
+pythonかJavaですねOracleから接続するなら。
+他のプロジェクトでこの言語使っているから使うにしては
+環境構築が面倒臭すぎる。
+
 
 # これから先
 vagrantでoracleのポートをホスト側のポートに紐づけてあるので、 \
@@ -97,3 +159,17 @@ sqlplusとBasic Packageをダウンロード \
 
 [JavaからOracleへの接続](https://www.oracle.com/jp/database/technologies/develop-java-apps-using-jdbc.html)
 
+[PythonからOracleへの接続](https://cx-oracle.readthedocs.io/en/latest/index.html)
+
+[GolangからOracleへの接続1](https://medium.com/@utranand/how-to-connect-golang-to-oracle-using-go-oci8-on-mac-os-b9e197fabdbf)
+
+[GolangからOracleへの接続2](https://qiita.com/qt-luigi/items/fbbe6792a77b493a58f9)
+[GOlangからOracleへの接続3](https://www.programmersought.com/article/58354720697/)
+
+[phpからOracleへの接続](https://blogs.oracle.com/otnjp/connect-php-7-to-oracle-database-using-oracle-linux-yum-server-ja)
+[phpからOracleへの接続2](https://qiita.com/bluemooninc/items/30897680f6f6775dcf68)
+[phpからOracleへの接続3](https://qiita.com/bluemooninc/items/30897680f6f6775dcf68)
+[phpからOracleへの接続4](https://www.php.net/manual/ja/oci8.installation.php)
+[Django Oracle](https://docs.djangoproject.com/en/3.1/ref/databases/#oracle-notes)
+
+[Oracle Sample Schema](https://github.com/oracle/db-sample-schemas)

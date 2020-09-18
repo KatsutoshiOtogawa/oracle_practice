@@ -39,25 +39,13 @@ public class App {
 			e.printStackTrace();
 			System.exit(1);
 		}finally{
-			// if(Objects.isNull(ods)){
-			// 	System.out.println("OracleDataSourceの初期化に失敗しました。");
-			// 	System.exit(1);
-			// }
+			if(Objects.isNull(ods)){
+				System.out.println("OracleDataSourceの初期化に失敗しました。");
+				System.exit(1);
+			}
 		}
-		if(Objects.isNull(ods)){
-			System.out.println("OracleDataSourceの初期化に失敗しました。");
-			System.exit(1);
-		}
+		
 		try (OracleConnection connection = (OracleConnection) ods.getConnection()) {
-			// Get the JDBC driver name and version 
-			DatabaseMetaData dbmd = connection.getMetaData();       
-			System.out.println("Driver Name: " + dbmd.getDriverName());
-			System.out.println("Driver Version: " + dbmd.getDriverVersion());
-			// Print some connection properties
-			System.out.println("Default Row Prefetch Value is: " + 
-			   connection.getDefaultRowPrefetch());
-			System.out.println("Database Username is: " + connection.getUserName());
-            System.out.println();
 
             PreparedStatement ps = connection.prepareStatement(SQL);
             ps.setInt(1, 1);

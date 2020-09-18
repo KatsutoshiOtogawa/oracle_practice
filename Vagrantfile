@@ -50,10 +50,17 @@ Vagrant.configure("2") do |config|
     # the path on the host to the actual folder. The second argument is
     # the path on the guest to mount the folder. And the optional third
     # argument is a set of non-required options.
+    
+    # this is require vagrant-vbguest plugin
     config.vm.synced_folder "./oracle_dev_setup", "/vagrant_oracle_dev_setup", type:"virtualbox"
     config.vm.synced_folder "./oracle_data_load", "/home/vagrant/oracle_data_load", type:"virtualbox"
-    config.vm.synced_folder "./testconnection", "/home/vagrant/testconnection", type:"virtualbox"
-    config.vm.synced_folder "./app", "/home/vagrant/app", type:"virtualbox"
+    config.vm.synced_folder "./python3", "/home/vagrant/python3", type:"virtualbox"
+    config.vm.synced_folder "./java", "/home/vagrant/java", type:"virtualbox"
+    config.vm.synced_folder "./golang", "/home/vagrant/golang", type:"virtualbox"
+    config.vm.synced_folder "./php", "/home/vagrant/php", type:"virtualbox"
+    config.vm.synced_folder "./rust", "/home/vagrant/rust", type:"virtualbox"
+    config.vm.synced_folder "./rlang", "/home/vagrant/rlang", type:"virtualbox"
+    config.vm.synced_folder "./scala", "/home/vagrant/scala", type:"virtualbox"
 
     # Provider-specific configuration so you can fine-tune various
     # backing providers for Vagrant. These expose provider-specific options.
@@ -77,6 +84,9 @@ Vagrant.configure("2") do |config|
       yum update -y
       # 日本語ロケールを追加しておく。追加しないとエラー。
       localedef -f UTF-8 -i ja_JP ja_JP
+
+      # 検索の単純化のためmlocateをインストール
+      yum install -y mlocate
 
       # webサーバーインストール
       yum install -y nginx
@@ -103,6 +113,40 @@ Vagrant.configure("2") do |config|
       # test用テーブルデータ放り込み用ライブラリ
       yum install -y python3-pip
       pip3 install names
+
+      # python環境
+      pip3 install pipenv
+
+      # golang環境
+      # rhel系はyumだと古いgoが入るのでfedoraのepelレポジトリを使う。近いミラーを選ぶこと。
+      # レポジトリの公開鍵をダウンロードしてインストール
+      wget https://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/RPM-GPG-KEY-EPEL-7Server
+      rpm --import RPM-GPG-KEY-EPEL-7Server
+      rm RPM-GPG-KEY-EPEL-7Server
+      yum-config-manager --add-repo https://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/7Server/x86_64
+      yum install -y golang
+      # 競合するため、golangインストール後は無効化
+      yum-config-manager --disable ftp.jaist.ac.jp_pub_Linux_Fedora_epel_7Server_x86_64 > /dev/null
+      su - vagrant -c 'echo export GOPATH=$HOME/.go >> $HOME/.bash_profile'
+
+      # rust環境
+      yum install -y rust cargo
+
+      # rlang環境
+      yum install -y R
+
+      # scala環境
+      yum install -y 
+
+      # php環境
+      yum install oracle-php-release-el7
+      yum install -y php
+      # yum -y install php php-oci8-19c としてインストールすると、
+      # PHP Warning:  PHP Startup: Unable to load dynamic library 'oci8.so' (tried: /usr/lib64/php/modules/oci8.so (libclntsh.so.19.1: cannot open shared object file: No such file or directory), /usr/lib64/php/modules/oci8.so.so (/usr/lib64/php/modules/oci8.so.so: cannot open shared object file: No such file or directory)) in Unknown on line 0
+      # PHP Warning:  PHP Startup: Unable to load dynamic library 'pdo_oci.so' (tried: /usr/lib64/php/modules/pdo_oci.so (libclntsh.so.19.1: cannot open shared object file: No such file or directory), /usr/lib64/php/modules/pdo_oci.so.so (/usr/lib64/php/modules/pdo_oci.so.so: cannot open shared object file: No such file or directory)) in Unknown on line 0
+      # libclntsh.so.19.1がないからエラーになるが最新のものをインストールしても、libclntsh.so.18.1のため、利用できず、コンパイルが必要。
+      # php oci8コンパイルのためのツールをインストール
+      yum install -y php-devel php-pear
 
       # oracle linuxでは不要
       # curl -o oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
