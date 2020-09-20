@@ -117,29 +117,41 @@ Vagrant.configure("2") do |config|
       # python環境
       pip3 install pipenv
 
+      # gradleインストール
+      wget https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
+      yum install -y unzip
+      unzip gradle-6.6.1-bin.zip
+      mv gradle-6.6.1 /usr/local/gradle
+      rm gradle-6.6.1-bin.zip
+      su - vagrant -c 'echo export PATH=/usr/local/gradle/bin:$PATH >> $HOME/.bash_profile'
+
       # golang環境
-      # rhel系はyumだと古いgoが入るのでfedoraのepelレポジトリを使う。近いミラーを選ぶこと。
+      # 開発者様のレポジトリがあるのでそれを使う
+      yum-config-manager --enable ol7_developer_golang112
+      yum install -y golang
+      su - vagrant -c 'echo export GOPATH=$HOME/.go >> $HOME/.bash_profile'
+
+      # rust環境
+      # rhel系はyumだと古いRustが入るのでfedoraのepelレポジトリを使う。近いミラーを選ぶこと。
       # レポジトリの公開鍵をダウンロードしてインストール
       wget https://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/RPM-GPG-KEY-EPEL-7Server
       rpm --import RPM-GPG-KEY-EPEL-7Server
       rm RPM-GPG-KEY-EPEL-7Server
       yum-config-manager --add-repo https://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/7Server/x86_64
-      yum install -y golang
-      # 競合するため、golangインストール後は無効化
-      yum-config-manager --disable ftp.jaist.ac.jp_pub_Linux_Fedora_epel_7Server_x86_64 > /dev/null
-      su - vagrant -c 'echo export GOPATH=$HOME/.go >> $HOME/.bash_profile'
-
-      # rust環境
       yum install -y rust cargo
+      # 競合するため、Rustインストール後は無効化
+      yum-config-manager --disable ftp.jaist.ac.jp_pub_Linux_Fedora_epel_7Server_x86_64 > /dev/null
 
       # rlang環境
+      yum-config-manager --enable ol7_developer_EPEL
       yum install -y R
 
       # scala環境
-      yum install -y 
+      curl https://bintray.com/sbt/rpm/rpm | sudo tee /etc/yum.repos.d/bintray-sbt-rpm.repo
+      yum install -y sbt
 
       # php環境
-      yum install oracle-php-release-el7
+      yum install -y oracle-php-release-el7
       yum install -y php
       # yum -y install php php-oci8-19c としてインストールすると、
       # PHP Warning:  PHP Startup: Unable to load dynamic library 'oci8.so' (tried: /usr/lib64/php/modules/oci8.so (libclntsh.so.19.1: cannot open shared object file: No such file or directory), /usr/lib64/php/modules/oci8.so.so (/usr/lib64/php/modules/oci8.so.so: cannot open shared object file: No such file or directory)) in Unknown on line 0
@@ -148,7 +160,7 @@ Vagrant.configure("2") do |config|
       # php oci8コンパイルのためのツールをインストール
       yum install -y php-devel php-pear
 
-      # oracle linuxでは不要
+      # oracle linuxではOracle databaseインストール前に入っているので不要
       # curl -o oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
       # yum -y localinstall oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
     SHELL

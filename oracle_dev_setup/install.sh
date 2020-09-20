@@ -13,27 +13,22 @@ sed -i 's/LISTENER_PORT=/LISTENER_PORT=1521/' /etc/sysconfig/oracle-xe-18c.conf
 # java
 yum -y localinstall package/jdk-11.0.8_linux-x64_bin.rpm
 
-# skdmanからgradleをインストール
-su - vagrant -c 'curl -s "https://get.sdkman.io" | bash'
-su - vagrant -c 'echo source $HOME/.sdkman/bin/sdkman-init.sh >> $HOME/.bash_profile'
-su - vagrant -c "sdk install gradle"
-
 # instanceの接続先の設定
 su - vagrant -c 'echo export ORACLE_SID=XE >> $HOME/.bash_profile'
 # su - vagrant -c "echo export ORAENV_ASK=NO >> .bash_profile"
 # su - vagrant -c "source /opt/oracle/product/18c/dbhomeXE/bin/oraenv"
 
 # oracleインストール先の設定
-su - vagrant -c 'echo　# config ORACLE_HOME >> $HOME/.bash_profile'
+su - vagrant -c 'echo "# config ORACLE_HOME >> $HOME/.bash_profile"'
 su - vagrant -c 'echo export ORACLE_BASE=/opt/oracle >> $HOME/.bash_profile'
 su - vagrant -c 'echo export ORACLE_HOME=$ORACLE_BASE/product/18c/dbhomeXE >> $HOME/.bash_profile'
 su - vagrant -c 'echo export PATH=$PATH:$ORACLE_BASE/product/18c/dbhomeXE/bin >> $HOME/.bash_profile'
 su - vagrant -c "echo '' >> .bash_profile"
 
 # sqlplusの文字コードの設定
-su - vagrant -c "echo # sqlplus decoding >> .bash_profile"
-su - vagrant -c "echo export NLS_LANG=Japanese_Japan.AL32UTF8 >> .bash_profile"
-su - vagrant -c "echo '' >> .bash_profile"
+su - vagrant -c "echo '# sqlplus decoding >> $HOME/.bash_profile'"
+su - vagrant -c 'echo export NLS_LANG=Japanese_Japan.AL32UTF8 >> $HOME/.bash_profile'
+su - vagrant -c 'echo "" >> $HOME/.bash_profile'
 
 # Oracle Databasesがシステム起動時に動くように自動化
 systemctl daemon-reload
@@ -53,6 +48,7 @@ CREATE TABLE test_table (
     ,second_name VARCHAR2(30)
     );
 COMMIT;
+END
 "
 
 # oracleにデータをimportする場合はoracle_data_loadから実行

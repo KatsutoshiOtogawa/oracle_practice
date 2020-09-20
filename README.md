@@ -72,13 +72,13 @@ bash test_table.sh
 
 # java からoracleを参照
 下記のサイトからojdbc8-full.tar.gzファイルをダウンロード、解凍して中の \
-jarファイルをプロジェクト配下のtestconnection/jarフォルダに入れてください。 \
+jarファイルをプロジェクト配下のtestconnection/java/jarフォルダに入れてください。 \
 [Oracle jdbcドライバ](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html)
 
 vagrantユーザーで下記のコマンドを実行してください。 \
 javaからoracleに接続してtableの内容を取得できるはずです。
 ```
-cd /home/vagrant/testconnection
+cd /home/vagrant/java/testconnection
 gradle run
 ```
 # pythonからoracleを参照
@@ -131,11 +131,11 @@ golangよりも言語としての習得難易度は高い。これらが差別�
 検索するとR Oracle Enterpriseがよく出るが、\
 別に外部からrlangを使うだけならODBCから普通に接続できる。 \
 pythonとの差別化だが、分析においてクエリの結果に対して複雑な加工処理をしない限り、 \
-rlangの方が楽だと思われる。
-
-# jrubyからoracleを参照
-
-# jythonからoracleを参照
+rlangの方が楽だと思われる。 \
+面白いのはoracleはR言語に対して積極的であるということ。 \
+ubuntuやfedoraに比べて古いパッケージが多いrhel系だが、 \
+yum-config-manager --enable ol7_developer_EPELとすると \
+R言語はかなり新しいバージョンの物を入れることができる。
 
 
 # 結論
