@@ -1,0 +1,7 @@
+2020.11.25 14:20:19 INFO  Started: Metals version 0.9.6 in workspace '/Volumes/EXTERNAL_HDD/source/oracle_practice' for client vscode.
+2020.11.25 14:20:21 INFO  time: initialize in 2.02s
+2020.11.25 14:20:22 WARN  Build server is not auto-connectable.
+2020.11.25 14:20:22 WARN  no build tool detected in workspace '/Volumes/EXTERNAL_HDD/source/oracle_practice'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2020.11.25 14:20:33 WARN  no build target for: /Volumes/EXTERNAL_HDD/source/oracle_practice/scala/testconnection/project/plugins.sbt
+2020.11.25 14:20:36 INFO  no build target: using presentation compiler with only scala-library
+2020.11.25 14:20:36 WARN  no build target for: /Volumes/EXTERNAL_HDD/source/oracle_practice/scala/testconnection/src/main/g8/src/main/scala/Stub.scala
