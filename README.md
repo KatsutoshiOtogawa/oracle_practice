@@ -17,6 +17,8 @@ Oracle Java, Oracle Database Express Editionは20200915日 \
 Oracleのサイトからrpm,Linuxと書かれているパッケージをダウンロードして、
 プロジェクトにあるoracle_dev_setup/packageにファイルをおいてください。 \
 [Oracle Database Express](https://www.oracle.com/database/technologies/xe-downloads.html) \
+[Oracle Enterprize manager](https://www.oracle.com/enterprise-manager/downloads/linux-x86-64-13c-rel4-downloads.html) *XEはEnterpfze Managerもバンドルされているので不要。 \
+[OUI installer](https://www.oracle.com/database/technologies/dotnet-odacdev-downloads.html) *dotnetサポート \
 [Java 11(LTS)](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
 ## OSインストール
 プロジェクト配下で下記のコマンドを実行してOSのインストールを行ってください。

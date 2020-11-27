@@ -21,6 +21,9 @@ localectl set-x11-keymap jp
 # gnomeがキーボードレイアウトを上書きしないように設定
 echo setxkbmap -layout jp >> /etc/X11/xinit/xinitrc
 
+# chrome remote-desktopを設定
+yum install -y chrome-remote-desktop
+
 # 開発環境にするのでインストール
 # yum -y groupinstall base "Development tools"
 
