@@ -5,3 +5,14 @@
 2020.11.25 14:20:33 WARN  no build target for: /Volumes/EXTERNAL_HDD/source/oracle_practice/scala/testconnection/project/plugins.sbt
 2020.11.25 14:20:36 INFO  no build target: using presentation compiler with only scala-library
 2020.11.25 14:20:36 WARN  no build target for: /Volumes/EXTERNAL_HDD/source/oracle_practice/scala/testconnection/src/main/g8/src/main/scala/Stub.scala
+2020.11.28 02:17:52 INFO  Started: Metals version 0.9.7 in workspace '/Volumes/EXTERNAL_HDD/source/oracle_practice' for client vscode.
+2020.11.28 02:17:54 INFO  time: initialize in 2.18s
+2020.11.28 02:18:04 WARN  Build server is not auto-connectable.
+2020.11.28 02:18:04 WARN  no build tool detected in workspace '/Volumes/EXTERNAL_HDD/source/oracle_practice'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2020.11.28 17:26:46 INFO  shutting down Metals
+2020.11.28 21:44:33 INFO  Started: Metals version 0.9.7 in workspace '/Volumes/EXTERNAL_HDD/source/oracle_practice' for client vscode.
+2020.11.28 21:44:36 INFO  time: initialize in 2.48s
+2020.11.28 21:44:36 WARN  Build server is not auto-connectable.
+2020.11.28 21:44:36 WARN  no build tool detected in workspace '/Volumes/EXTERNAL_HDD/source/oracle_practice'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+11月 29, 2020 2:20:09 午後 org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+情報: Unsupported notification method: $/setTraceNotification

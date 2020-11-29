@@ -1,26 +1,52 @@
 #!/bin/bash 
-
+set -e
 # 実行するとサイレントインストールが始まります。
 
-ORACLE_PASSWWORD=xkhxnv08WOuhbgtdwpq
+ORACLE_PASSWORD=xkhxnv08WOuhbgtdwpq
+
+# you want to use pluggable database. you insert data this database.
+PDB_INSTANCE=XEPDB1
+
+# oracle linuxではOracle databaseインストール前に入っているので不要
+# curl -o oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
+# yum -y localinstall oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
 
 # oracle
 mkdir /xe_logs 
-yum -y localinstall package/oracle-database-xe-18c-1.0-1.x86_64.rpm > /xe_logs/XEsilentinstall.log 2>&1
+yum -y localinstall package/oracle-database-xe-*-*.*-*.x86_64.rpm > /xe_logs/XEsilentinstall.log 2>&1
 sed -i 's/LISTENER_PORT=/LISTENER_PORT=1521/' /etc/sysconfig/oracle-xe-18c.conf
-(echo $ORACLE_PASSWWORD; echo $ORACLE_PASSWWORD;) | /etc/init.d/oracle-xe-18c configure >> /xe_logs/XEsilentinstall.log 2>&1
+(echo $ORACLE_PASSWORD; echo $ORACLE_PASSWORD;) | /etc/init.d/oracle-xe-* configure >> /xe_logs/XEsilentinstall.log 2>&1
 
 
 echo '# set oracle environment variable'  >> ~/.bash_profile
 echo 'export ORACLE_SID=XE'  >> ~/.bash_profile
 echo 'export ORAENV_ASK=NO'  >> ~/.bash_profile
 echo 'export ORACLE_HOME=/opt/oracle/product/18c/dbhomeXE' >> ~/.bash_profile
-echo 'export ORACLE_BASE=/opt/oracle  >> ~/.bash_profile' >> ~/.bash_profile
+echo 'export ORACLE_BASE=/opt/oracle' >> ~/.bash_profile
 echo 'export PATH=$PATH:$ORACLE_HOME/bin' >> ~/.bash_profile
+echo export ORACLE_PASSWORD=$ORACLE_PASSWORD >> ~/.bash_profile
+echo '' >> ~/.bash_profile
+
+# sqlplusの文字コードの設定
+echo '# sqlplus decoding' >> ~/.bash_profile
+echo 'export NLS_LANG=Japanese_Japan.AL32UTF8' >> ~/.bash_profile
 echo '' >> ~/.bash_profile
 
 # reload bash environment.
 source ~/.bash_profile
+
+#  you want to connect oracleDB, use XEPDB1 pragabble
+cat << END >> $ORACLE_HOME/network/admin/tnsnames.ora
+${PDB_INSTANCE} =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = ${PDB_INSTANCE})
+    )
+  )
+
+END
 
 # vagrant 
 su - vagrant -c 'echo "# set oracle environment variable"  >> ~/.bash_profile'
@@ -52,8 +78,11 @@ su - vagrant -c 'echo "" >> ~/.bash_profile'
 
 # END
 
-# java
-yum -y localinstall package/jdk-11.0.8_linux-x64_bin.rpm
+# if you have oracle_java, install that,but you dont have that, install openjdk-11.
+if ls -1 /vagrant_oracle_dev_setup/package/jdk-*.*.*_linux-x64_bin.rpm > /dev/null; then
+  yum -y localinstall package/jdk-*.*.*_linux-x64_bin.rpm
+fi
+
 
 # Oracle Databasesがシステム起動時に動くように自動化
 systemctl daemon-reload
@@ -62,29 +91,64 @@ systemctl enable oracle-xe-18c
 # oracle Databaseを起動。
 systemctl start oracle-xe-18c
 
+
 user=general
 user_password="tfrkBi1qzxIkwg0ohpb"
 # 右のようにlocalhost以外は禁止されているデフォルトではsqlplus system@"dbhost.example/XE"
-sqlplus system/$ORACLE_PASSWORD@localhost/XE << END
-// Oracle Database EM Expressをvagrantの外(host側)から実行できる様にする。
+sqlplus system/$ORACLE_PASSWORD@XE << END
+-- XDBをvagrantの外(host側)から実行できる様にする。
 EXEC DBMS_XDB.SETLISTENERLOCALACCESS(FALSE);
 
-// CONNECT PDB FOR CREATE USER AND CREATE
+-- CONNECT PDB FOR CREATE USER AND CREATE
 ALTER SESSION SET container = XEPDB1;
-// CREATE USER
+
+-- CREATE USER
 CREATE USER $user
   IDENTIFIED BY $user_password
-  // DEFAULT TABLESPACE USER01
-  // TEMPORARY TABLESPACE temp
-  // QUOTA 50M ON USER01
-  // PROFILE default
+  -- DEFAULT TABLESPACE USER01
+  -- TEMPORARY TABLESPACE temp
+  -- QUOTA 50M ON USER01
+  -- PROFILE default
 ;
-// force changing password!
+
+-- add grant to create sesssion.
+GRANT CREATE SESSION TO $user;
+-- force changing password!
 ALTER USER $user PASSWORD EXPIRE;
 END
 
+# copy tnsnames.ora 
+cp $ORACLE_HOME/network/admin/tnsnames.ora ./
+
+# create sample from github
+# you want to know this script detail, go to https://github.com/oracle/db-sample-schemas.git
+# you select branch version the same with oracle database version.
+ORACLE_VERSION=18c
+
+git clone https://github.com/oracle/db-sample-schemas.git -b v${ORACLE_VERSION}
+cd db-sample-schemas/
+perl -p -i.bak -e 's#__SUB__CWD__#'$(pwd)'#g' *.sql */*.sql */*.dat 
+sqlplus system/${ORACLE_PASSWORD}@${PDB_INSTANCE} @mksample $ORACLE_PASSWORD syspw hrpw oepw pmpw ixpw shpw bipw users temp $HOME/dbsamples.log $PDB_INSTANCE
+cd ../
+
+
+# you dont use production vironment.
+# https://github.com/oracle/oracle-db-tools/tree/master/ords
+
+sqlplus system/${ORACLE_PASSWORD}@${PDB_INSTANCE} << EOF
+BEGIN
+ ORDS.ENABLE_SCHEMA(p_enabled => TRUE,
+                   p_schema => 'HR',
+                   p_url_mapping_type => 'BASE_PATH',
+                   p_url_mapping_pattern => 'hr',
+                   p_auto_rest_auth => FALSE);
+
+ commit; 
+END;
+EOF
+
 # test用table作成
-sqlplus system/$ORACLE_PASSWORD@localhost/XE << END
+sqlplus system/$ORACLE_PASSWORD@${PDB_INSTANCE} << END
 CREATE TABLE test_table (
     id NUMBER GENERATED ALWAYS AS IDENTITY
     ,first_name VARCHAR2(30)
@@ -157,10 +221,14 @@ phpize
 make
 
 # ビルドした物をインストール
-bash -c "cd `ls -d /home/vagrant/src/*/`ext/oci8 && make install"
+bash -c "cd `ls -d ~/src/*/`ext/oci8 && make install"
 
 # extensionをphp.iniに追加してoci8を有効にする。
 echo "" >> /etc/php.ini
 echo ";this module is needed to connect to oracle" >> /etc/php.ini
 echo extension=oci8.so >> /etc/php.ini
 echo "" >> /etc/php.ini
+
+
+# ファイルリスト更新
+updatedb

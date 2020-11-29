@@ -1,6 +1,5 @@
 
 
-ORACLE_PASSWWORD=password
 csv=test_table.csv
 touch $csv
 row=1000

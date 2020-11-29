@@ -69,7 +69,7 @@ Vagrant.configure("2") do |config|
     #
     config.vm.provider "virtualbox" do |vb|
       # Display the VirtualBox GUI when booting the machine
-      vb.gui = true
+      # vb.gui = true
 
       # Customize the amount of memory on the VM:
       vb.memory = "4096"
@@ -82,5 +82,5 @@ Vagrant.configure("2") do |config|
     # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
     # documentation for more information about their specific syntax and use.
     config.vm.provision "shell", path: "./provision.sh"
-  end
+end
   

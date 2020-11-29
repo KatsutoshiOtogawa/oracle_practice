@@ -152,9 +152,11 @@ vagrantでoracleのポートをホスト側のポートに紐づけてあるの�
 下記のファイルをホスト側でインストールすると接続できるようになるので試してみてください。 \
 sqlplusとBasic Packageをダウンロード \
 [Oracle Instance Client](https://www.oracle.com/database/technologies/instant-client/linux-x86-64-downloads.html)
+[外部から接続できない時。](https://support.oracle.com/knowledge/Oracle%20Database%20Products/2544653_1.html)
 # refference
 [oracleドキュメント](https://docs.oracle.com/cd/E96517_01/xeinl/index.html?xd_co_f=9ac774b5-e809-4f8f-af78-817d43ef4782)
 
+[oracle Sample scheme](https://docs.oracle.com/cd/E82638_01/comsc/installing-sample-schemas.html#GUID-C0254DAB-F54C-4B20-9B1E-4F9E21781B96)
 [Javaドキュメント](https://www.oracle.com/java/technologies/javase-jdk11-doc-downloads.html)
 
 [Oracle Linux Vagrant](https://yum.oracle.com/boxes/)

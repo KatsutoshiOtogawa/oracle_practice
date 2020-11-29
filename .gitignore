@@ -2,3 +2,5 @@
 .vagrant
 oracle_dev_setup/package
 oracle_dev_setup/log.txt
+oracle_dev_setup/tnsnames.ora
+oracle_dev_setup/db-sample-schemas

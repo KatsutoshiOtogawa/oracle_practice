@@ -9,8 +9,9 @@ import (
 ) // 入出力フォーマットを実装したパッケージ
 
 func main() {
+	password = "xkhxnv08WOuhbgtdwpq"
 	// 以下のように接続して
-	connectStr := "system/password@localhost:1521/XE"
+	connectStr := "system/" + password + "@localhost/XE"
 	db, err := sql.Open("oci8", connectStr)
 	if err != nil {
 		fmt.Printf("DbOpen Error: %s", err)

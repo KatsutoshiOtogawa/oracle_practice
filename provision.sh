@@ -8,21 +8,21 @@ admin="admin"
 admin_password="vtljcxncmmkLa8p~1jLi"
 
 # サーバー用のGUI環境インストール
-yum groupinstall "Server with GUI"
+# yum groupinstall "Server with GUI"
 
 # GUI ログインをONにする。
-systemctl set-default graphical.target
+# systemctl set-default graphical.target
 
 # 日本語用キーマップの設定
 # systemctl の再起動により反映される。
-localectl set-keymap --no-convert jp
-localectl set-x11-keymap jp
+# localectl set-keymap --no-convert jp
+# localectl set-x11-keymap jp
 
 # gnomeがキーボードレイアウトを上書きしないように設定
-echo setxkbmap -layout jp >> /etc/X11/xinit/xinitrc
+# echo setxkbmap -layout jp >> /etc/X11/xinit/xinitrc
 
 # chrome remote-desktopを設定
-yum install -y chrome-remote-desktop
+# yum install -y chrome-remote-desktop
 
 # 開発環境にするのでインストール
 # yum -y groupinstall base "Development tools"
@@ -37,6 +37,8 @@ echo  << END | chpasswd
 $general:$general_password
 $admin:$admin_password
 END
+
+yum -y install git
 
 # 初回ログイン時にパスワードの変更を求める。
 passwd -e $general
@@ -110,7 +112,7 @@ openssl x509 -req -days 3650 -signkey server.key < server.csr > server.crt
 # LANG=C xdg-user-dirs-gtk-update
 
 # 日本語ロケールを追加しておく。追加しないとエラー。
-localedef -f UTF-8 -i ja_JP ja_JP
+# localedef -f UTF-8 -i ja_JP ja_JP
 
 # 検索の単純化のためmlocateをインストール
 yum install -y mlocate
@@ -145,18 +147,21 @@ pip3 install names
 pip3 install pipenv
 
 # gradleインストール
-wget https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
-yum install -y unzip
-unzip gradle-6.6.1-bin.zip
-mv gradle-6.6.1 /usr/local/gradle
-rm gradle-6.6.1-bin.zip
-su - vagrant -c 'echo export PATH=/usr/local/gradle/bin:$PATH >> $HOME/.bash_profile'
+# wget https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
+# yum install -y unzip
+# unzip gradle-6.6.1-bin.zip
+# mv gradle-6.6.1 /usr/local/gradle
+# rm gradle-6.6.1-bin.zip
+# su - vagrant -c 'echo "export PATH=/usr/local/gradle/bin:$PATH" >> $HOME/.bash_profile'
+
+# mavenインストール
+yum -y install maven
 
 # golang環境
 # 開発者用のレポジトリがあるのでそれを使う
 yum-config-manager --enable ol7_developer_golang112
 yum install -y golang
-su - vagrant -c 'echo export GOPATH=$HOME/.go >> $HOME/.bash_profile'
+su - vagrant -c 'echo export GOPATH=~/.go >> $HOME/.bash_profile'
 
 # rust環境
 # rhel系はyumだと古いRustが入るのでfedoraのepelレポジトリを使う。近いミラーを選ぶこと。
@@ -187,6 +192,7 @@ yum install -y php
 # php oci8コンパイルのためのツールをインストール
 yum install -y php-devel php-pear
 
-# oracle linuxではOracle databaseインストール前に入っているので不要
-# curl -o oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
-# yum -y localinstall oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
+yum install -y composer
+
+# ファイルリスト更新
+updatedb
