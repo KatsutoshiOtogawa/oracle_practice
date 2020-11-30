@@ -23,7 +23,7 @@ echo 'export ORACLE_SID=XE'  >> ~/.bash_profile
 echo 'export ORAENV_ASK=NO'  >> ~/.bash_profile
 echo 'export ORACLE_HOME=/opt/oracle/product/18c/dbhomeXE' >> ~/.bash_profile
 echo 'export ORACLE_BASE=/opt/oracle' >> ~/.bash_profile
-echo 'export PATH=$PATH:$ORACLE_HOME/bin' >> ~/.bash_profile
+echo 'export PATH=\$PATH:\$ORACLE_HOME/bin' >> ~/.bash_profile
 echo export ORACLE_PASSWORD=$ORACLE_PASSWORD >> ~/.bash_profile
 echo '' >> ~/.bash_profile
 
@@ -59,7 +59,13 @@ su - oracle -c 'echo export ORACLE_SID=XE >> ~/.bash_profile'
 su - oracle -c 'echo export ORAENV_ASK=NO >> ~/.bash_profile'
 su - oracle -c 'echo export ORACLE_HOME=/opt/oracle/product/18c/dbhomeXE >> ~/.bash_profile'
 su - oracle -c 'echo export ORACLE_BASE=/opt/oracle  >> ~/.bash_profile'
-su - oracle -c 'echo "export PATH=$PATH:$ORACLE_HOME/bin" >> ~/.bash_profile'
+su - oracle -c 'echo export PATH=\$PATH:\$ORACLE_HOME/bin >> ~/.bash_profile'
+su - oracle -c 'echo export ORACLE_PASSWORD=$ORACLE_PASSWORD >> ~/.bash_profile'
+su - oracle -c 'echo "" >> ~/.bash_profile'
+
+# sqlplusの文字コードの設定
+su - oracle -c 'echo "# sqlplus decoding" >> ~/.bash_profile'
+su - oracle -c 'echo export NLS_LANG=Japanese_Japan.AL32UTF8 >> ~/.bash_profile'
 su - oracle -c 'echo "" >> ~/.bash_profile'
 
 # vagrant 
@@ -68,7 +74,7 @@ su - vagrant -c 'echo export ORACLE_SID=XE >> ~/.bash_profile'
 su - vagrant -c 'echo export ORAENV_ASK=NO >> ~/.bash_profile'
 su - vagrant -c 'echo export ORACLE_HOME=/opt/oracle/product/18c/dbhomeXE >> ~/.bash_profile'
 su - vagrant -c 'echo export ORACLE_BASE=/opt/oracle  >> ~/.bash_profile'
-su - vagrant -c 'echo "export PATH=$PATH:$ORACLE_HOME/bin" >> ~/.bash_profile'
+su - vagrant -c 'echo export PATH=\$PATH:\$ORACLE_HOME/bin >> ~/.bash_profile'
 su - vagrant -c 'echo "" >> ~/.bash_profile'
 
 # sqlplusの文字コードの設定
