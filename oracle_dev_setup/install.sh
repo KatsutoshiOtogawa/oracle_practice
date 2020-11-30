@@ -37,6 +37,7 @@ source ~/.bash_profile
 
 #  you want to connect oracleDB, use XEPDB1 pragabble
 cat << END >> $ORACLE_HOME/network/admin/tnsnames.ora
+
 ${PDB_INSTANCE} =
   (DESCRIPTION =
     (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))
@@ -47,6 +48,19 @@ ${PDB_INSTANCE} =
   )
 
 END
+
+mkdir /home/oracle
+chmod 700 /home/oracle
+chown oracle /home/oracle
+
+# oracle
+su - oracle -c 'echo "# set oracle environment variable"  >> ~/.bash_profile'
+su - oracle -c 'echo export ORACLE_SID=XE >> ~/.bash_profile'
+su - oracle -c 'echo export ORAENV_ASK=NO >> ~/.bash_profile'
+su - oracle -c 'echo export ORACLE_HOME=/opt/oracle/product/18c/dbhomeXE >> ~/.bash_profile'
+su - oracle -c 'echo export ORACLE_BASE=/opt/oracle  >> ~/.bash_profile'
+su - oracle -c 'echo "export PATH=$PATH:$ORACLE_HOME/bin" >> ~/.bash_profile'
+su - oracle -c 'echo "" >> ~/.bash_profile'
 
 # vagrant 
 su - vagrant -c 'echo "# set oracle environment variable"  >> ~/.bash_profile'
@@ -96,6 +110,17 @@ user=general
 user_password="tfrkBi1qzxIkwg0ohpb"
 # 右のようにlocalhost以外は禁止されているデフォルトではsqlplus system@"dbhost.example/XE"
 sqlplus system/$ORACLE_PASSWORD@XE << END
+-- show spfile location.
+SHOW PARAMETER spfile;
+-- show initialization parameters
+SELECT name,value FROM v$parameters
+
+SELECT version,instance_name,status,logins FROM v\$instance;
+SELECT name,open_mode,cdb FROM v$database;
+
+-- show user info.
+SELECT username, account_status,default_tablespace FROM DBA_USERS;
+
 -- XDBをvagrantの外(host側)から実行できる様にする。
 EXEC DBMS_XDB.SETLISTENERLOCALACCESS(FALSE);
 
@@ -117,8 +142,84 @@ GRANT CREATE SESSION TO $user;
 ALTER USER $user PASSWORD EXPIRE;
 END
 
-# copy tnsnames.ora 
+# create os authentication user.
+sqlplus system/$ORACLE_PASSWORD@XE << END
+ALTER SESSION SET container = XEPDB1;
+CREATE USER ops\$vagrant IDENTIFIED EXTERNALLY;
+GRANT pdb_dba TO ops\$vagrant;
+-- GRANT CREATE SESSION TO ops\$vagrant;
+-- 
+ALTER SESSION SET container = CDB\$ROOT;
+CREATE PLUGGABLE DATABASE vagrant ADMIN USER ops\$vagrant
+IDENTIFIED BY "ops\$vagrant"
+DEFAULT TABLESPACE vagrant_tbs
+FILE_NAME_CONVERT=(
+  '/opt/oracle/oradata/XE/pdbseed/'
+  ,'/opt/oracle/oradata/XE/vagrant/'
+)
+;
+END
+
+
+# sqlplus pdbadmin/$ORACLE_PASSWORD@${PDB_INSTANCE} << END
+# -- 
+# ALTER SESSION SET container = CDB\$ROOT;
+# CREATE PLUGGABLE DATABASE vagrant ADMIN USER ops\$vagrant
+# IDENTIFIED BY "ops\$vagrant"
+# DEFAULT TABLESPACE vagrant_tbs
+# FILE_NAME_CONVERT=(
+#   '/opt/oracle/oradata/XE/pdbseed/'
+#   ,'/opt/oracle/oradata/XE/vagrant/'
+# )
+# ;
+# END
+
+
+TEST_DB=TEST_DB
+TEST_DB_PASSWORD=9qwgntynuuxjgegv4ZG
+
+sqlplus system/$ORACLE_PASSWORD@XE << END
+CREATE PLUGGABLE DATABASE ${TEST_DB} ADMIN USER ${TEST_DB}
+IDENTIFIED BY "${TEST_DB_PASSWORD}"
+DEFAULT TABLESPACE test_tbs
+-- なぜか動かない。XE の仕様かも。
+-- DATAFILE /opt/oracle/oradata/XE/test_db/users01.dbf
+-- SIZE 10M AUTOEXTEND ON
+-- create from pdbseed directory
+FILE_NAME_CONVERT=(
+  '/opt/oracle/oradata/XE/pdbseed/'
+  ,'/opt/oracle/oradata/XE/test_db/'
+)
+;
+
+-- OPEN DATABASE
+
+END
+
+#  you want to connect oracleDB, use XEPDB1 pragabble
+cat << END >> $ORACLE_HOME/network/admin/tnsnames.ora
+
+${TEST_DB} =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = ${TEST_DB})
+    )
+  )
+
+END
+
+# copy tnsnames.ora to host OS
 cp $ORACLE_HOME/network/admin/tnsnames.ora ./
+
+# copy tnsnames.ora to guest os user
+cp /opt/oracle/product/18c/dbhomeXE/network/admin/tnsnames.ora /home/vagrant/
+chown vagrant:vagrant /home/vagrant/tnsnames.ora
+# set TNS_ADMIN. this environment is used by sqlplus for searching tnsnames.ora.
+su - vagrant -c 'echo "# set tnsnames.ora location." >> ~/bash_profile' 
+su - vagrant -c 'echo "export TNS_ADMIN=$HOME" >> ~/bash_profile'
+su - vagrant -c 'echo "" >> ~/bash_profile'
 
 # create sample from github
 # you want to know this script detail, go to https://github.com/oracle/db-sample-schemas.git

@@ -16,3 +16,13 @@
 2020.11.28 21:44:36 WARN  no build tool detected in workspace '/Volumes/EXTERNAL_HDD/source/oracle_practice'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
 11月 29, 2020 2:20:09 午後 org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
 情報: Unsupported notification method: $/setTraceNotification
+11月 30, 2020 1:52:48 午前 org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+情報: Unsupported notification method: $/setTraceNotification
+11月 30, 2020 1:58:15 午前 org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+情報: Unsupported notification method: $/setTraceNotification
+2020.11.30 17:43:15 INFO  Started: Metals version 0.9.7 in workspace '/Volumes/EXTERNAL_HDD/source/oracle_practice' for client vscode.
+2020.11.30 17:43:17 INFO  time: initialize in 2.19s
+2020.11.30 17:43:21 WARN  Build server is not auto-connectable.
+2020.11.30 17:43:21 WARN  no build tool detected in workspace '/Volumes/EXTERNAL_HDD/source/oracle_practice'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+11月 30, 2020 9:04:23 午後 org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+情報: Unsupported notification method: $/setTraceNotification
