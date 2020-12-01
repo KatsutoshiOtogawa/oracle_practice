@@ -32,7 +32,8 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>dependency-jars/</classpathPrefix>
-              <mainClass>com.example.App</mainClass>
+              <!-- this tag is application entry -->
+              <mainClass>com.sample.App</mainClass>
             </manifest>
           </archive>
         </configuration>
