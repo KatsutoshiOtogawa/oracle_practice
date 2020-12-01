@@ -23,7 +23,7 @@ echo 'export ORACLE_SID=XE'  >> ~/.bash_profile
 echo 'export ORAENV_ASK=NO'  >> ~/.bash_profile
 echo 'export ORACLE_HOME=/opt/oracle/product/18c/dbhomeXE' >> ~/.bash_profile
 echo 'export ORACLE_BASE=/opt/oracle' >> ~/.bash_profile
-echo 'export PATH=\$PATH:\$ORACLE_HOME/bin' >> ~/.bash_profile
+echo export PATH=\$PATH:\$ORACLE_HOME/bin >> ~/.bash_profile
 echo export ORACLE_PASSWORD=$ORACLE_PASSWORD >> ~/.bash_profile
 echo '' >> ~/.bash_profile
 
@@ -224,7 +224,7 @@ cp /opt/oracle/product/18c/dbhomeXE/network/admin/tnsnames.ora /home/vagrant/
 chown vagrant:vagrant /home/vagrant/tnsnames.ora
 # set TNS_ADMIN. this environment is used by sqlplus for searching tnsnames.ora.
 su - vagrant -c 'echo "# set tnsnames.ora location." >> ~/bash_profile' 
-su - vagrant -c 'echo "export TNS_ADMIN=$HOME" >> ~/bash_profile'
+su - vagrant -c 'echo export TNS_ADMIN=\$HOME >> ~/bash_profile'
 su - vagrant -c 'echo "" >> ~/bash_profile'
 
 # create sample from github
@@ -281,24 +281,11 @@ END
 # END
 # '
 
-# golangからoracleに接続するための設定
-mkdir ~/lib
-echo '
-prefixdir=$ORACLE_HOME
-libdir=\${prefixdir}/lib
-includedir=\${prefixdir}/rdbms/public
-Name: OCI
-Description: Oracle database driver
-Version: 18c
-Libs: -L\${libdir} -lclntsh
-Cflags: -I\${includedir}
-' > ~/lib/oci8.pc
 
 
 # golang,phpは共有ライブラリのコンパイルが必要なため下のようにする必要がある。
 echo '# oracle connect for golang,php' >> ~/.bash_profile
-echo 'export PKG_CONFIG_PATH=$HOME/lib' >> ~/.bash_profile
-echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib' >> ~/.bash_profile
+echo export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$ORACLE_HOME/lib >> ~/.bash_profile
 echo '' >> ~/.bash_profile
 
 yum -y install systemtap-sdt-devel
@@ -309,11 +296,9 @@ echo '' >> ~/.bash_profile
 
 source ~/.bash_profile
 
-# vagrantユーザーにsrcディレクトリを作成し、
-# ソースコードをダウンロードしてビルドする。
-
-mkdir ~/src
-cd ~/src
+# phpは手動で作業。ソースコードをダウンロードしてビルドする。
+mkdir /usr/local/src/php_oci8
+cd /usr/local/src/php_oci8
 yumdownloader --source php
 source_rpm=$(ls -1 | grep php-7)
 source_name=$(echo $source_rpm | sed 's/\.src\.rpm//')
@@ -322,13 +307,20 @@ cpio -i *.xz < ${source_name}.cpio
 source_xz=$(ls -1 | grep php-7 | grep xz)
 tar xf $source_xz
 source_dir=$(ls -d */ | grep php-7)
+
 cd $source_dir/ext/oci8
 phpize
 ./configure --with-oci8=shared,$ORACLE_HOME
 make
 
+# cd $source_dir/ext/pdo_oci
+# phpize
+# ./configure --with-pdo_oci=shared,$ORACLE_HOME
+# make
+
 # ビルドした物をインストール
-bash -c "cd `ls -d ~/src/*/`ext/oci8 && make install"
+bash -c "cd `ls -d /usr/local/src/*/`ext/oci8 && make install"
+# bash -c "cd `ls -d /usr/local/src/*/`ext/pdo_oci && make install"
 
 # extensionをphp.iniに追加してoci8を有効にする。
 echo "" >> /etc/php.ini
@@ -336,6 +328,29 @@ echo ";this module is needed to connect to oracle" >> /etc/php.ini
 echo extension=oci8.so >> /etc/php.ini
 echo "" >> /etc/php.ini
 
+# library  
+
+# cp ~/lib/oci8.pc /usr/local/lib/
+echo '# set pkg_config_path for compiling library' >> ~/.bash_profile
+echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile
+echo "" >> >> ~/.bash_profile
+
+su - vagrant 'echo "# set pkg_config_path for compiling library" >> ~/.bash_profile'
+su - vagrant 'echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile'
+su - vagrant 'echo "" >> ~/.bash_profile'
+
+# golangからoracleに接続するための設定
+# mkdir ~/lib
+cat << END >  /usr/local/lib/oci8.pc
+prefixdir=$ORACLE_HOME
+libdir=\${prefixdir}/lib
+includedir=\${prefixdir}/rdbms/public
+Name: OCI
+Description: Oracle database driver
+Version: 18c
+Libs: -L\${libdir} -lclntsh
+Cflags: -I\${includedir}
+END
 
 # ファイルリスト更新
 updatedb
