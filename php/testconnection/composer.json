@@ -1,0 +1,6 @@
+{
+    "name": "vagrant/testconnection",
+    "require": {
+        "catfan/medoo": "^1.7"
+    }
+}

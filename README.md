@@ -81,8 +81,20 @@ vagrantユーザーで下記のコマンドを実行してください。 \
 javaからoracleに接続してtableの内容を取得できるはずです。
 ```
 cd /home/vagrant/java/testconnection
-gradle run
+mvn package
+java -cp target/dependency-jars/*:target/classes/ com.sample.App
 ```
+
+# csharpからoracleを参照
+dotnet5.0で確認。javaと比べて相性が悪い、ドライバ周りが面倒かと思ったらそうでもなかった。
+```
+cd /home/vagrant/csharp/testconnection
+dotnet restore
+dotnet run
+```
+だけでテストすることができる。
+
+
 # pythonからoracleを参照
 一番簡単。速度が要求されない分析などではこれが一番賢い選択だと思われる。
 ```
@@ -113,8 +125,8 @@ golangよりも面倒臭い。 \
 phpからoracleに接続するためにoci8をインストールする必要があるが、 \
 Oracelのclientのバージョンと、yumで入るociのバージョンが \
 違うとコンパイルする必要がある。 \
-もし本番環境でやる場合はoracle_dev_setup/install.shにあるコードを参考に書くと良い。 \
-本プロジェクトではコンパイル、extension追加まで自動化してあるので、
+ネットで一応調べたが、XEを使った例が無く、自分はコンパイルできなかった。 \
+もしやり方を知っている人がいたら教えて欲しい。
 ```
 cd /home/vagrant/php/testconnection
 php main.php
@@ -141,9 +153,9 @@ R言語はかなり新しいバージョンの物を入れることができる�
 
 
 # 結論
-pythonかJavaですねOracleから接続するなら。
-他のプロジェクトでこの言語使っているから使うにしては
-環境構築が面倒臭すぎる。
+pythonかJavaですねOracleから接続するなら。 \
+次点でcsharp。linuxでのdotnetの可能性を信じるならアリ。意外にもpowershellからoracleの接続が簡単だったりでdotnetの技術はoracleと相性が良い。 \
+php,golangは他のプロジェクトでこの言語使っているからという理由で使うにしては環境構築が面倒臭すぎる。
 
 
 # これから先

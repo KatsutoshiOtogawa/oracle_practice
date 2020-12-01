@@ -146,14 +146,6 @@ pip3 install names
 # python環境
 pip3 install pipenv
 
-# gradleインストール
-# wget https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
-# yum install -y unzip
-# unzip gradle-6.6.1-bin.zip
-# mv gradle-6.6.1 /usr/local/gradle
-# rm gradle-6.6.1-bin.zip
-# su - vagrant -c 'echo "export PATH=/usr/local/gradle/bin:$PATH" >> $HOME/.bash_profile'
-
 # mavenインストール
 yum -y install maven
 
@@ -161,7 +153,13 @@ yum -y install maven
 # 開発者用のレポジトリがあるのでそれを使う
 yum-config-manager --enable ol7_developer_golang112
 yum install -y golang
-su - vagrant -c 'echo export GOPATH=~/.go >> $HOME/.bash_profile'
+su - vagrant -c 'echo export GOPATH=$HOME/.go >> $HOME/.bash_profile'
+
+# dotnet environment
+rpm --import https://packages.microsoft.com/keys/microsoft.asc
+wget -O /etc/yum.repos.d/microsoft-prod.repo https://packages.microsoft.com/config/rhel/7/prod.repo
+
+yum -y install dotnet-sdk-5.0
 
 # rust環境
 # rhel系はyumだと古いRustが入るのでfedoraのepelレポジトリを使う。近いミラーを選ぶこと。

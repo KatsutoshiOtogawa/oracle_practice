@@ -288,6 +288,9 @@ echo '# oracle connect for golang,php' >> ~/.bash_profile
 echo export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$ORACLE_HOME/lib >> ~/.bash_profile
 echo '' >> ~/.bash_profile
 
+# libclntsh.soをinstantclientと同じディレクトリに持ってくる。
+ln -s $ORACLE_HOME/lib/libclntsh.so $ORACLE_HOME
+
 yum -y install systemtap-sdt-devel
 
 echo '# oracle connect for php' >> ~/.bash_profile
@@ -310,17 +313,15 @@ source_dir=$(ls -d */ | grep php-7)
 
 cd $source_dir/ext/oci8
 phpize
-./configure --with-oci8=shared,$ORACLE_HOME
+./configure --with-oci8=shared,instantclient,$ORACLE_HOME
 make
+make install 
 
-# cd $source_dir/ext/pdo_oci
-# phpize
-# ./configure --with-pdo_oci=shared,$ORACLE_HOME
-# make
-
-# ビルドした物をインストール
-bash -c "cd `ls -d /usr/local/src/*/`ext/oci8 && make install"
-# bash -c "cd `ls -d /usr/local/src/*/`ext/pdo_oci && make install"
+cd $source_dir/ext/pdo_oci
+phpize
+./configure --with-pdo_oci=shared,instantclient,$ORACLE_HOME
+make
+make install 
 
 # extensionをphp.iniに追加してoci8を有効にする。
 echo "" >> /etc/php.ini
