@@ -83,6 +83,8 @@ javaからoracleに接続してtableの内容を取得できるはずです。
 cd /home/vagrant/java/testconnection
 mvn package
 java -cp target/dependency-jars/*:target/classes/ com.sample.App
+# you want to execute jar file.
+java -jar target/testconnection-1.0-SNAPSHOT.jar
 ```
 
 # csharpからoracleを参照
