@@ -19,7 +19,6 @@ namespace App
                     )
                 );
 
-                
                 orclCon.Open();
 
                 // Execute simple select statement that returns first 10 names from EMPLOYEES table

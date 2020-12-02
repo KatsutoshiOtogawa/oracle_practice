@@ -58,6 +58,7 @@ Vagrant.configure("2") do |config|
     config.vm.synced_folder "./python3", "/home/vagrant/python3", type:"virtualbox"
     config.vm.synced_folder "./java", "/home/vagrant/java", type:"virtualbox"
     config.vm.synced_folder "./csharp", "/home/vagrant/csharp", type:"virtualbox"
+    config.vm.synced_folder "./fsharp", "/home/vagrant/fsharp", type:"virtualbox"
     config.vm.synced_folder "./golang", "/home/vagrant/golang", type:"virtualbox"
     config.vm.synced_folder "./php", "/home/vagrant/php", type:"virtualbox"
     config.vm.synced_folder "./rust", "/home/vagrant/rust", type:"virtualbox"
