@@ -173,8 +173,15 @@ yum install -y rust cargo
 yum-config-manager --disable ftp.jaist.ac.jp_pub_Linux_Fedora_epel_7Server_x86_64 > /dev/null
 
 # rlang環境
+# this R is ROracle.
 yum-config-manager --enable ol7_developer_EPEL
 yum install -y R
+
+# install package management tool
+R --no-save << END
+options(repos="https://cran.ism.ac.jp/")
+install.packages("renv")
+END
 
 # scala環境
 curl https://bintray.com/sbt/rpm/rpm | sudo tee /etc/yum.repos.d/bintray-sbt-rpm.repo

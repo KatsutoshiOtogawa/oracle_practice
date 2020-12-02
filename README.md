@@ -191,3 +191,5 @@ sqlplusとBasic Packageをダウンロード \
 [Django Oracle](https://docs.djangoproject.com/en/3.1/ref/databases/#oracle-notes)
 
 [Oracle Sample Schema](https://github.com/oracle/db-sample-schemas)
+
+[Oracle R Enterprise](https://docs.oracle.com/en/database/oracle/r-enterprise/1.5.1/oread/index.html)

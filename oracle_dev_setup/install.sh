@@ -103,14 +103,85 @@ if ls -1 /vagrant_oracle_dev_setup/package/jdk-*.*.*_linux-x64_bin.rpm > /dev/nu
   yum -y localinstall package/jdk-*.*.*_linux-x64_bin.rpm
 fi
 
-
 # Oracle Databasesがシステム起動時に動くように自動化
 systemctl daemon-reload
-systemctl enable oracle-xe-18c
+systemctl enable oracle-*-*
 
 # oracle Databaseを起動。
-systemctl start oracle-xe-18c
+systemctl start oracle-*-*
 
+# if you have oracle r machine lerning
+if ls -1 /vagrant_oracle_dev_setup/package/ore-server-linux-x86-64-*.*.* > /dev/null; then
+  
+  # enable extprocy is called OML4R module only.
+  echo SET EXTPROC_DLLS=ONLY:$ORACLE_HOME/lib/ore.so >> $ORACLE_HOME/hs/admin/extproc.ora
+
+  # enable extproc trace.
+  echo SET TRACE_LEVEL=ON >> $ORACLE_HOME/hs/admin/extproc.ora
+
+  # reload settings.
+  systemctl restart oracle-*-*
+
+  mv $ORACLE_HOME/R/library/ORE $ORACLE_HOME/R/library/ORE.orig
+  mv $ORACLE_HOME/R/library/OREbase $ORACLE_HOME/R/library/OREbase.orig
+  mv $ORACLE_HOME/R/library/OREcommon $ORACLE_HOME/R/library/OREcommon.orig
+  mv $ORACLE_HOME/R/library/OREdm $ORACLE_HOME/R/library/OREdm.orig
+  mv $ORACLE_HOME/R/library/OREdplyr $ORACLE_HOME/R/library/OREdplyr.orig
+  mv $ORACLE_HOME/R/library/OREeda $ORACLE_HOME/R/library/OREeda.orig
+  mv $ORACLE_HOME/R/library/OREembed $ORACLE_HOME/R/library/OREembed.orig
+  mv $ORACLE_HOME/R/library/OREgraphics $ORACLE_HOME/R/library/OREgraphics.orig
+  mv $ORACLE_HOME/R/library/OREmodels $ORACLE_HOME/R/library/OREmodels.orig
+  mv $ORACLE_HOME/R/library/OREpredict $ORACLE_HOME/R/library/OREpredict.orig
+  mv $ORACLE_HOME/R/library/OREserver $ORACLE_HOME/R/library/OREserver.orig
+  mv $ORACLE_HOME/R/library/OREstats $ORACLE_HOME/R/library/OREstats.orig
+  mv $ORACLE_HOME/R/library/ORExml $ORACLE_HOME/R/library/ORExml.orig
+
+  unzip package/ore-server-linux-x86-64-*.*.* -d package/
+
+  # need to install ORE-server 
+  chmod u+x /opt/oracle/product/18c/dbhomeXE/bin/ORE
+
+  ORE CMD INSTALL package/server/ORE_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREbase_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREcommon_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREdm_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREdplyr_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREeda_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREembed_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREgraphics_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREmodels_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREpredict_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREserver_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/OREstats_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  ORE CMD INSTALL package/server/ORExml_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
+  
+  sqlplus system/$ORACLE_PASSWORD@XE << END
+  SPOOL install.txt
+  ALTER SESSION SET container=XEPDB1;
+  ALTER PROFILE DEFAULT LIMIT PASSWORD_VERIFY_FUNCTION NULL;
+  @$ORACLE_HOME/R/server/rqcfg.sql
+  define permtbl = SYSAUX
+  define temptbl = TEMP
+  define orahome = $ORACLE_HOME
+  define rhome = /usr/lib64/R
+END
+  # install additionnal library for using ORE.
+  R --no-save << END
+  # deceide library load.
+  options(repos="https://cran.ism.ac.jp/")
+  install.packages("png", dependencies = TRUE)
+  install.packages("DBI", dependencies = TRUE)
+  install.packages("ROracle", dependencies = TRUE)
+  
+END
+
+# ore.connect("OML_USER", password="OML_USERpsw", conn_string="", all=TRUE)
+
+  R --no-save << END
+  ore.connect("system", password="$ORACLE_PASSWORD", conn_string="XEPDB1", all=TRUE)
+  ore.is.connected()
+END
+fi
 
 user=general
 user_password="tfrkBi1qzxIkwg0ohpb"
@@ -263,25 +334,6 @@ CREATE TABLE test_table (
     );
 COMMIT;
 END
-
-# oracleにデータをimportする場合はoracle_data_loadから実行
-
-
-# # golangからoracleに接続するための設定
-# su - vagrant -c 'mkdir $HOME/lib'
-# su - vagrant -c 'cat << END > $HOME/lib/oci8.pc
-# prefixdir=$ORACLE_HOME
-# libdir=\${prefixdir}/lib
-# includedir=\${prefixdir}/rdbms/public
-# Name: OCI
-# Description: Oracle database driver
-# Version: 18c
-# Libs: -L\${libdir} -lclntsh
-# Cflags: -I\${includedir}
-# END
-# '
-
-
 
 # golang,phpは共有ライブラリのコンパイルが必要なため下のようにする必要がある。
 echo '# oracle connect for golang,php' >> ~/.bash_profile
