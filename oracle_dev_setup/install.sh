@@ -138,8 +138,8 @@ if ls -1 /vagrant_oracle_dev_setup/package/ore-server-linux-x86-64-*.*.* > /dev/
 
   unzip package/ore-server-linux-x86-64-*.*.* -d package/
 
-  # need to install ORE-server 
-  chmod u+x /opt/oracle/product/18c/dbhomeXE/bin/ORE
+  # need to install ORE-server and can use usually user.
+  chmod 755 /opt/oracle/product/18c/dbhomeXE/bin/ORE
 
   ORE CMD INSTALL package/server/ORE_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
   ORE CMD INSTALL package/server/OREbase_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
@@ -156,27 +156,47 @@ if ls -1 /vagrant_oracle_dev_setup/package/ore-server-linux-x86-64-*.*.* > /dev/
   ORE CMD INSTALL package/server/ORExml_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz
   
   sqlplus system/$ORACLE_PASSWORD@XE << END
-  SPOOL install.txt
   ALTER SESSION SET container=XEPDB1;
   ALTER PROFILE DEFAULT LIMIT PASSWORD_VERIFY_FUNCTION NULL;
-  @$ORACLE_HOME/R/server/rqcfg.sql
-  define permtbl = SYSAUX
-  define temptbl = TEMP
-  define orahome = $ORACLE_HOME
-  define rhome = /usr/lib64/R
+  @$ORACLE_HOME/R/server/rqcfg.sql SYSAUX TEMP $ORACLE_HOME /usr/lib64/R
+
+  -- argument variable define example.
+  -- DEFINE permtbl = SYSAUX
+  -- DEFINE temptbl = TEMP
+  -- DEFINE orahome = $ORACLE_HOME
+  -- DEFINE rhome = /usr/lib64/R
 END
-  # install additionnal library for using ORE.
-  R --no-save << END
-  # deceide library load.
-  options(repos="https://cran.ism.ac.jp/")
-  install.packages("png", dependencies = TRUE)
-  install.packages("DBI", dependencies = TRUE)
-  install.packages("ROracle", dependencies = TRUE)
+
+  # install ROracle library
+  if ls -1 /vagrant_oracle_dev_setup/package/ore-supporting-linux-x86-64-*.*.* > /dev/null; then
+
+    yum -y install cairo-devel 
+    yum -y install libpng-devel
+
+    unzip package/ore-supporting-linux-x86-64-*.*.* -d package/
+
+    R CMD INSTALL package/supporting/Cairo_*.*-*_R_x86_64-unknown-linux-gnu.tar.gz  
+    R CMD INSTALL package/supporting/DBI_*.*-*_R_x86_64-unknown-linux-gnu.tar.gz  
+    R CMD INSTALL package/supporting/ROracle_*.*-*_R_x86_64-unknown-linux-gnu.tar.gz  
+    R CMD INSTALL package/supporting/arules_*.*-*_R_x86_64-unknown-linux-gnu.tar.gz  
+    R CMD INSTALL package/supporting/png_*.*-*_R_x86_64-unknown-linux-gnu.tar.gz  
+    R CMD INSTALL package/supporting/randomForest_*.*-*_R_x86_64-unknown-linux-gnu.tar.gz  
+    R CMD INSTALL package/supporting/statmod_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz  
+
+  fi
+#   # install additionnal library for using ORE.
+#   R --no-save << END
+#   # deceide library load.
+#   options(repos="https://cran.ism.ac.jp/")
+#   install.packages("png", dependencies = TRUE)
+#   install.packages("DBI", dependencies = TRUE)
+#   install.packages("ROracle", dependencies = TRUE)
   
-END
+# END
 
 # ore.connect("OML_USER", password="OML_USERpsw", conn_string="", all=TRUE)
 
+  # 接続確認
   R --no-save << END
   ore.connect("system", password="$ORACLE_PASSWORD", conn_string="XEPDB1", all=TRUE)
   ore.is.connected()
