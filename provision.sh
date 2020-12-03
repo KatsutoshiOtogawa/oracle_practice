@@ -197,6 +197,9 @@ yum install -y php
 # php oci8コンパイルのためのツールをインストール
 yum install -y php-devel php-pear
 
+
+# https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
 yum install -y composer
 
 # ファイルリスト更新

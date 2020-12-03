@@ -129,6 +129,9 @@ Oracelのclientのバージョンと、yumで入るociのバージョンが \
 違うとコンパイルする必要がある。 \
 ネットで一応調べたが、XEを使った例が無く、自分はコンパイルできなかった。 \
 もしやり方を知っている人がいたら教えて欲しい。
+
+なお、php8.0からはoci8がデフォルトでバンドルされているので、コンパイルなどは不要なようだ。 \
+[php8.0 oci](https://www.php.net/manual/ja/oci8.requirements.php)
 ```
 cd /home/vagrant/php/testconnection
 php main.php

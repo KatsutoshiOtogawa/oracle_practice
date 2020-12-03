@@ -1,11 +1,13 @@
 #!/bin/bash 
-set -e
 # 実行するとサイレントインストールが始まります。
 
 ORACLE_PASSWORD=xkhxnv08WOuhbgtdwpq
 
 # you want to use pluggable database. you insert data this database.
 PDB_INSTANCE=XEPDB1
+
+
+RQSYS_PASSWORD=dicxwjelsicC3lDnrx3
 
 # oracle linuxではOracle databaseインストール前に入っているので不要
 # curl -o oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
@@ -14,8 +16,8 @@ PDB_INSTANCE=XEPDB1
 # oracle
 mkdir /xe_logs 
 yum -y localinstall package/oracle-database-xe-*-*.*-*.x86_64.rpm > /xe_logs/XEsilentinstall.log 2>&1
-sed -i 's/LISTENER_PORT=/LISTENER_PORT=1521/' /etc/sysconfig/oracle-xe-18c.conf
-(echo $ORACLE_PASSWORD; echo $ORACLE_PASSWORD;) | /etc/init.d/oracle-xe-* configure >> /xe_logs/XEsilentinstall.log 2>&1
+sed -i 's/LISTENER_PORT=/LISTENER_PORT=1521/' /etc/sysconfig/oracle-*-*.conf
+(echo $ORACLE_PASSWORD; echo $ORACLE_PASSWORD;) | /etc/init.d/oracle-*-* configure >> /xe_logs/XEsilentinstall.log 2>&1
 
 
 echo '# set oracle environment variable'  >> ~/.bash_profile
@@ -194,11 +196,16 @@ END
   
 # END
 
-# ore.connect("OML_USER", password="OML_USERpsw", conn_string="", all=TRUE)
-
+  # RQSYS を有効にしてログイン
+  sqlplus system/$ORACLE_PASSWORD@XE << END
+  ALTER SESSION SET container=$PDB_INSTANCE;
+  ALTER USER rqsys ACCOUNT unlock;
+  ALTER USER rqsys IDENTIFIED BY $RQSYS_PASSWORD;
+  GRANT CREATE SESSION to rqsys;
+END
   # 接続確認
   R --no-save << END
-  ore.connect("system", password="$ORACLE_PASSWORD", conn_string="XEPDB1", all=TRUE)
+  ore.connect("rqsys", password="$RQSYS_PASSWORD", conn_string="$PDB_INSTANCE", all=TRUE)
   ore.is.connected()
 END
 fi
@@ -412,7 +419,7 @@ su - vagrant 'echo "# set pkg_config_path for compiling library" >> ~/.bash_prof
 su - vagrant 'echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile'
 su - vagrant 'echo "" >> ~/.bash_profile'
 
-# golangからoracleに接続するための設定
+# golang,phpからoracleに接続するための設定
 # mkdir ~/lib
 cat << END >  /usr/local/lib/oci8.pc
 prefixdir=$ORACLE_HOME
@@ -424,6 +431,13 @@ Version: 18c
 Libs: -L\${libdir} -lclntsh
 Cflags: -I\${includedir}
 END
+
+# module install 確認
+if php -m | grep oci8 > /dev/null; then
+  echo "oci8 install success!"
+else
+  # echo "oci8 installed failed." 2>
+fi
 
 # ファイルリスト更新
 updatedb

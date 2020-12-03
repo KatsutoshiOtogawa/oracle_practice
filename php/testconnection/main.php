@@ -4,14 +4,23 @@ require 'vendor/autoload.php';
 // Using Medoo namespace
 use Medoo\Medoo;
 
-// Initialize
+$pdo = new PDO('oci:dbname=PDBXE1', 'system', getenv("ORACLE_PASSWORD"));
+
+
 $database = new Medoo([
-    'database_type' => 'oracle',
-    'database_name' => 'PDBXE1',
-    'server' => 'localhost',
-    'username' => 'system',
-    'password' => getenv("ORACLE_PASSWORD")
+    'pdo' => $pdo,
+    'database_type' => 'oracle'
 ]);
+
+// 'pdo' => $pdo,
+// Initialize
+// $database = new Medoo([
+//     'database_type' => 'oracle',
+//     'database_name' => 'PDBXE1',
+//     'server' => 'localhost',
+//     'username' => 'system',
+//     'password' => getenv("ORACLE_PASSWORD")
+// ]);
 
 
 $data = $database->select('HR.COUNTRIES', [
