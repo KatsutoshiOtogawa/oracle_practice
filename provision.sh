@@ -1,4 +1,4 @@
-yum update -y
+dnf update -y
 
 # 一般作業ようユーザー
 general="general"
@@ -38,17 +38,17 @@ $general:$general_password
 $admin:$admin_password
 END
 
-yum -y install git
+dnf -y install git
 
 # 初回ログイン時にパスワードの変更を求める。
 passwd -e $general
 passwd -e $admin
 
 # install need to use ssl certificate 
-yum install -y openssl
+dnf install -y openssl
 openssl genrsa 2048 > server.key
 
-yum install -y expect
+dnf install -y expect
 pip3 install pexpect
 
 # create csr
@@ -115,10 +115,10 @@ openssl x509 -req -days 3650 -signkey server.key < server.csr > server.crt
 # localedef -f UTF-8 -i ja_JP ja_JP
 
 # 検索の単純化のためmlocateをインストール
-yum install -y mlocate
+dnf install -y mlocate
 
 # webサーバーインストール
-yum install -y nginx
+dnf install -y nginx
 
 # SELinux,firewalldの初期状態の確認
 echo SELinux status is ...
@@ -140,67 +140,85 @@ setsebool -P httpd_can_network_connect on
 setsebool -P httpd_can_network_relay on
 
 # test用テーブルデータ放り込み用ライブラリ
-yum install -y python3-pip
+dnf install -y python3-pip
 pip3 install names
 
 # python環境
 pip3 install pipenv
 
 # mavenインストール
-yum -y install maven
+dnf -y install maven
 
 # golang環境
-# 開発者用のレポジトリがあるのでそれを使う
-yum-config-manager --enable ol7_developer_golang112
-yum install -y golang
+dnf install -y golang
 su - vagrant -c 'echo export GOPATH=$HOME/.go >> $HOME/.bash_profile'
 
 # dotnet environment
 rpm --import https://packages.microsoft.com/keys/microsoft.asc
-wget -O /etc/yum.repos.d/microsoft-prod.repo https://packages.microsoft.com/config/rhel/7/prod.repo
+wget -O /etc/yum.repos.d/microsoft-prod.repo https://packages.microsoft.com/config/rhel/8/prod.repo
 
-yum -y install dotnet-sdk-5.0
+dnf -y install dotnet-sdk-5.0
 
 # rust環境
-# rhel系はyumだと古いRustが入るのでfedoraのepelレポジトリを使う。近いミラーを選ぶこと。
-# レポジトリの公開鍵をダウンロードしてインストール
-wget https://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/RPM-GPG-KEY-EPEL-7Server
-rpm --import RPM-GPG-KEY-EPEL-7Server
-rm RPM-GPG-KEY-EPEL-7Server
-yum-config-manager --add-repo https://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/7Server/x86_64
-yum install -y rust cargo
-# 競合するため、Rustインストール後は無効化
-yum-config-manager --disable ftp.jaist.ac.jp_pub_Linux_Fedora_epel_7Server_x86_64 > /dev/null
+dnf install -y rust cargo
 
 # rlang環境
-# this R is ROracle.
-yum-config-manager --enable ol7_developer_EPEL
-yum install -y R
+# dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+# ARCH=$( /bin/arch )
+# subscription-manager repos --enable "codeready-builder-for-rhel-8-${ARCH}-rpms"
 
-# install package management tool
-R --no-save << END
-options(repos="https://cran.ism.ac.jp/")
-install.packages("renv")
-END
+# dnf -y install R
 
 # scala環境
-curl https://bintray.com/sbt/rpm/rpm | sudo tee /etc/yum.repos.d/bintray-sbt-rpm.repo
-yum install -y sbt
+# curl https://bintray.com/sbt/rpm/rpm | tee /etc/yum.repos.d/bintray-sbt-rpm.repo
+# dnf install -y sbt
+
+basearch=`uname -m`
+# cat << END > /etc/yum.repos.d/ol8-epel.repo 
+# [ol8_developer_EPEL]
+# name= Oracle Linux $releasever EPEL ($basearch)
+# baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/developer/EPEL/$basearch/
+# gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+# gpgcheck=1
+# enabled=1
+# END
+
+# 202010現在ol8_developerにも無い。
+# dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+# dnf makecache
+
 
 # php環境
-yum install -y oracle-php-release-el7
-yum install -y php
+# oracle対応が楽なphp8系をインストールする。
+# official repositoryに出るようになったら、そちらを使う。
+# php のコンパイルに必要。
+dnf install -y libxml2-devel sqlite-devel
+
+wget https://www.php.net/distributions/php-8.0.0.tar.gz
+tar zxvf php-8.*.*.tar.gz -C /usr/local/src
+rm php-8.*.*.tar.gz
+cd /usr/local/src/php-8.*.*
+# build
+./configure
+make
+make install
+
+# install php.ini file.
+install -m 640 /usr/local/src/php-8.*.*/php.ini-development /usr/local/lib/php.ini
+
+sed -i 's/;extension=pdo_oci/extension=pdo_oci/' /usr/local/lib/php.ini
+
+echo export PATH=\$PATH:/usr/local/bin >> ~/.bash_profile
+su - vagrant -c 'echo export PATH=\$PATH:/usr/local/bin >> ~/.bash_profile'
+
 # yum -y install php php-oci8-19c としてインストールすると、
 # PHP Warning:  PHP Startup: Unable to load dynamic library 'oci8.so' (tried: /usr/lib64/php/modules/oci8.so (libclntsh.so.19.1: cannot open shared object file: No such file or directory), /usr/lib64/php/modules/oci8.so.so (/usr/lib64/php/modules/oci8.so.so: cannot open shared object file: No such file or directory)) in Unknown on line 0
 # PHP Warning:  PHP Startup: Unable to load dynamic library 'pdo_oci.so' (tried: /usr/lib64/php/modules/pdo_oci.so (libclntsh.so.19.1: cannot open shared object file: No such file or directory), /usr/lib64/php/modules/pdo_oci.so.so (/usr/lib64/php/modules/pdo_oci.so.so: cannot open shared object file: No such file or directory)) in Unknown on line 0
 # libclntsh.so.19.1がないからエラーになるが最新のものをインストールしても、libclntsh.so.18.1のため、利用できず、コンパイルが必要。
 # php oci8コンパイルのためのツールをインストール
-yum install -y php-devel php-pear
+# dnf install -y php-devel php-pear
 
-
-# https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-
-yum install -y composer
+# dnf install -y composer
 
 # ファイルリスト更新
 updatedb

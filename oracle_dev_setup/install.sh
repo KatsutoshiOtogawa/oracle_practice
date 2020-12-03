@@ -15,9 +15,9 @@ RQSYS_PASSWORD=dicxwjelsicC3lDnrx3
 
 # oracle
 mkdir /xe_logs 
-yum -y localinstall package/oracle-database-xe-*-*.*-*.x86_64.rpm > /xe_logs/XEsilentinstall.log 2>&1
-sed -i 's/LISTENER_PORT=/LISTENER_PORT=1521/' /etc/sysconfig/oracle-*-*.conf
-(echo $ORACLE_PASSWORD; echo $ORACLE_PASSWORD;) | /etc/init.d/oracle-*-* configure >> /xe_logs/XEsilentinstall.log 2>&1
+dnf -y install package/oracle-database-xe-*-*.*-*.x86_64.rpm > /xe_logs/XEsilentinstall.log 2>&1
+sed -i 's/LISTENER_PORT=/LISTENER_PORT=1521/' /etc/sysconfig/oracle-xe-18c.conf
+(echo $ORACLE_PASSWORD; echo $ORACLE_PASSWORD;) | /etc/init.d/oracle-xe-18c configure >> /xe_logs/XEsilentinstall.log 2>&1
 
 
 echo '# set oracle environment variable'  >> ~/.bash_profile
@@ -102,8 +102,9 @@ su - vagrant -c 'echo "" >> ~/.bash_profile'
 
 # if you have oracle_java, install that,but you dont have that, install openjdk-11.
 if ls -1 /vagrant_oracle_dev_setup/package/jdk-*.*.*_linux-x64_bin.rpm > /dev/null; then
-  yum -y localinstall package/jdk-*.*.*_linux-x64_bin.rpm
+  dnf -y install package/jdk-*.*.*_linux-x64_bin.rpm
 fi
+
 
 # Oracle Databasesがシステム起動時に動くように自動化
 systemctl daemon-reload
@@ -138,7 +139,7 @@ if ls -1 /vagrant_oracle_dev_setup/package/ore-server-linux-x86-64-*.*.* > /dev/
   mv $ORACLE_HOME/R/library/OREstats $ORACLE_HOME/R/library/OREstats.orig
   mv $ORACLE_HOME/R/library/ORExml $ORACLE_HOME/R/library/ORExml.orig
 
-  unzip package/ore-server-linux-x86-64-*.*.* -d package/
+  unzip package/ore-server-linux-x86-64-*.*.* -o -d package/
 
   # need to install ORE-server and can use usually user.
   chmod 755 /opt/oracle/product/18c/dbhomeXE/bin/ORE
@@ -172,10 +173,10 @@ END
   # install ROracle library
   if ls -1 /vagrant_oracle_dev_setup/package/ore-supporting-linux-x86-64-*.*.* > /dev/null; then
 
-    yum -y install cairo-devel 
-    yum -y install libpng-devel
+    dnf -y install cairo-devel 
+    dnf -y install libpng-devel
 
-    unzip package/ore-supporting-linux-x86-64-*.*.* -d package/
+    unzip package/ore-supporting-linux-x86-64-*.*.* -o -d package/
 
     R CMD INSTALL package/supporting/Cairo_*.*-*_R_x86_64-unknown-linux-gnu.tar.gz  
     R CMD INSTALL package/supporting/DBI_*.*-*_R_x86_64-unknown-linux-gnu.tar.gz  
@@ -186,13 +187,6 @@ END
     R CMD INSTALL package/supporting/statmod_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz  
 
   fi
-#   # install additionnal library for using ORE.
-#   R --no-save << END
-#   # deceide library load.
-#   options(repos="https://cran.ism.ac.jp/")
-#   install.packages("png", dependencies = TRUE)
-#   install.packages("DBI", dependencies = TRUE)
-#   install.packages("ROracle", dependencies = TRUE)
   
 # END
 
@@ -204,7 +198,8 @@ END
   GRANT CREATE SESSION to rqsys;
 END
   # 接続確認
-  R --no-save << END
+  ORE --no-save << END
+  library(ORE)
   ore.connect("rqsys", password="$RQSYS_PASSWORD", conn_string="$PDB_INSTANCE", all=TRUE)
   ore.is.connected()
 END
@@ -363,81 +358,73 @@ COMMIT;
 END
 
 # golang,phpは共有ライブラリのコンパイルが必要なため下のようにする必要がある。
-echo '# oracle connect for golang,php' >> ~/.bash_profile
-echo export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$ORACLE_HOME/lib >> ~/.bash_profile
-echo '' >> ~/.bash_profile
+# echo '# oracle connect for golang,php' >> ~/.bash_profile
+# echo export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$ORACLE_HOME/lib >> ~/.bash_profile
+# echo '' >> ~/.bash_profile
 
-# libclntsh.soをinstantclientと同じディレクトリに持ってくる。
-ln -s $ORACLE_HOME/lib/libclntsh.so $ORACLE_HOME
+# # libclntsh.soをinstantclientと同じディレクトリに持ってくる。
+# ln -s $ORACLE_HOME/lib/libclntsh.so $ORACLE_HOME
 
-yum -y install systemtap-sdt-devel
+# dnf -y install systemtap-sdt-devel
 
-echo '# oracle connect for php' >> ~/.bash_profile
-echo 'export PHP_DTRACE=yes' >> ~/.bash_profile
-echo '' >> ~/.bash_profile
+# echo '# oracle connect for php' >> ~/.bash_profile
+# echo 'export PHP_DTRACE=yes' >> ~/.bash_profile
+# echo '' >> ~/.bash_profile
 
-source ~/.bash_profile
+# source ~/.bash_profile
 
 # phpは手動で作業。ソースコードをダウンロードしてビルドする。
-mkdir /usr/local/src/php_oci8
-cd /usr/local/src/php_oci8
-yumdownloader --source php
-source_rpm=$(ls -1 | grep php-7)
-source_name=$(echo $source_rpm | sed 's/\.src\.rpm//')
-rpm2cpio $source_rpm > ${source_name}.cpio
-cpio -i *.xz < ${source_name}.cpio
-source_xz=$(ls -1 | grep php-7 | grep xz)
-tar xf $source_xz
-source_dir=$(ls -d */ | grep php-7)
+# mkdir /usr/local/src/php_oci8
+# cd /usr/local/src/php_oci8
+# dnf download --source php
+# source_rpm=$(ls -1 | grep php-7)
+# source_name=$(echo $source_rpm | sed 's/\.src\.rpm//')
+# rpm2cpio $source_rpm > ${source_name}.cpio
+# cpio -i *.xz < ${source_name}.cpio
+# source_xz=$(ls -1 | grep php-7 | grep xz)
+# tar xf $source_xz
+# source_dir=$(ls -d */ | grep php-7)
 
-cd $source_dir/ext/oci8
-phpize
-./configure --with-oci8=shared,instantclient,$ORACLE_HOME
-make
-make install 
+# cd $source_dir/ext/oci8
+# phpize
+# ./configure --with-oci8=shared,instantclient,$ORACLE_HOME
+# make
+# make install 
 
-cd $source_dir/ext/pdo_oci
-phpize
-./configure --with-pdo_oci=shared,instantclient,$ORACLE_HOME
-make
-make install 
+# cd $source_dir/ext/pdo_oci
+# phpize
+# ./configure --with-pdo_oci=shared,instantclient,$ORACLE_HOME
+# make
+# make install 
 
 # extensionをphp.iniに追加してoci8を有効にする。
-echo "" >> /etc/php.ini
-echo ";this module is needed to connect to oracle" >> /etc/php.ini
-echo extension=oci8.so >> /etc/php.ini
-echo "" >> /etc/php.ini
+# echo "" >> /etc/php.ini
+# echo ";this module is needed to connect to oracle" >> /etc/php.ini
+# echo extension=oci8.so >> /etc/php.ini
+# echo "" >> /etc/php.ini
 
 # library  
 
-# cp ~/lib/oci8.pc /usr/local/lib/
-echo '# set pkg_config_path for compiling library' >> ~/.bash_profile
-echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile
-echo "" >> >> ~/.bash_profile
+# echo '# set pkg_config_path for compiling library' >> ~/.bash_profile
+# echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile
+# echo "" >> ~/.bash_profile
 
-su - vagrant 'echo "# set pkg_config_path for compiling library" >> ~/.bash_profile'
-su - vagrant 'echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile'
-su - vagrant 'echo "" >> ~/.bash_profile'
+# su - vagrant 'echo "# set pkg_config_path for compiling library" >> ~/.bash_profile'
+# su - vagrant 'echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile'
+# su - vagrant 'echo "" >> ~/.bash_profile'
 
 # golang,phpからoracleに接続するための設定
 # mkdir ~/lib
-cat << END >  /usr/local/lib/oci8.pc
-prefixdir=$ORACLE_HOME
-libdir=\${prefixdir}/lib
-includedir=\${prefixdir}/rdbms/public
-Name: OCI
-Description: Oracle database driver
-Version: 18c
-Libs: -L\${libdir} -lclntsh
-Cflags: -I\${includedir}
-END
-
-# module install 確認
-if php -m | grep oci8 > /dev/null; then
-  echo "oci8 install success!"
-else
-  # echo "oci8 installed failed." 2>
-fi
+# cat << END >  /usr/local/lib/oci8.pc
+# prefixdir=$ORACLE_HOME
+# libdir=\${prefixdir}/lib
+# includedir=\${prefixdir}/rdbms/public
+# Name: OCI
+# Description: Oracle database driver
+# Version: 18c
+# Libs: -L\${libdir} -lclntsh
+# Cflags: -I\${includedir}
+# END
 
 # ファイルリスト更新
 updatedb
