@@ -10,14 +10,24 @@ PDB_INSTANCE=XEPDB1
 RQSYS_PASSWORD=dicxwjelsicC3lDnrx3
 
 # oracle linuxではOracle databaseインストール前に入っているので不要
-# curl -o oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
-# yum -y localinstall oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
+# compat-libcap1,compat-libstdc++-33 required oracle database
+dnf -y install http://mirror.centos.org/centos/7/os/x86_64/Packages/compat-libcap1-1.10-7.el7.x86_64.rpm
+dnf -y install http://mirror.centos.org/centos/7/os/x86_64/Packages/compat-libstdc++-33-3.2.3-72.el7.x86_64.rpm
+
+# preinstall library.
+curl -o oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
+dnf -y install oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
+rm oracle-database-preinstall-18c-1.0-1.el7.x86_64.rpm
+
+# this share object is using in oracle database system.
+# this share object need is fedora only(rhel,oracle linux are already installed.).
+dnf -y install libnsl
 
 # oracle
 mkdir /xe_logs 
-yum -y localinstall package/oracle-database-xe-*-*.*-*.x86_64.rpm > /xe_logs/XEsilentinstall.log 2>&1
-sed -i 's/LISTENER_PORT=/LISTENER_PORT=1521/' /etc/sysconfig/oracle-*-*.conf
-(echo $ORACLE_PASSWORD; echo $ORACLE_PASSWORD;) | /etc/init.d/oracle-*-* configure >> /xe_logs/XEsilentinstall.log 2>&1
+dnf -y install package/oracle-database-xe-*-*.*-*.x86_64.rpm > /xe_logs/XEsilentinstall.log 2>&1
+sed -i 's/LISTENER_PORT=/LISTENER_PORT=1521/' /etc/sysconfig/oracle-xe-18c.conf
+(echo $ORACLE_PASSWORD; echo $ORACLE_PASSWORD;) | /etc/init.d/oracle-xe-18c configure >> /xe_logs/XEsilentinstall.log 2>&1
 
 
 echo '# set oracle environment variable'  >> ~/.bash_profile
@@ -39,6 +49,15 @@ source ~/.bash_profile
 
 #  you want to connect oracleDB, use XEPDB1 pragabble
 cat << END >> $ORACLE_HOME/network/admin/tnsnames.ora
+
+XE =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = XE)
+    )
+  )
 
 ${PDB_INSTANCE} =
   (DESCRIPTION =
@@ -107,10 +126,10 @@ fi
 
 # Oracle Databasesがシステム起動時に動くように自動化
 systemctl daemon-reload
-systemctl enable oracle-*-*
+systemctl enable oracle-xe-18c
 
 # oracle Databaseを起動。
-systemctl start oracle-*-*
+systemctl start oracle-xe-18c
 
 # if you have oracle r machine lerning
 if ls -1 /vagrant_oracle_dev_setup/package/ore-server-linux-x86-64-*.*.* > /dev/null; then
@@ -122,7 +141,7 @@ if ls -1 /vagrant_oracle_dev_setup/package/ore-server-linux-x86-64-*.*.* > /dev/
   echo SET TRACE_LEVEL=ON >> $ORACLE_HOME/hs/admin/extproc.ora
 
   # reload settings.
-  systemctl restart oracle-*-*
+  systemctl restart oracle-xe-18c
 
   mv $ORACLE_HOME/R/library/ORE $ORACLE_HOME/R/library/ORE.orig
   mv $ORACLE_HOME/R/library/OREbase $ORACLE_HOME/R/library/OREbase.orig
@@ -138,7 +157,7 @@ if ls -1 /vagrant_oracle_dev_setup/package/ore-server-linux-x86-64-*.*.* > /dev/
   mv $ORACLE_HOME/R/library/OREstats $ORACLE_HOME/R/library/OREstats.orig
   mv $ORACLE_HOME/R/library/ORExml $ORACLE_HOME/R/library/ORExml.orig
 
-  unzip package/ore-server-linux-x86-64-*.*.* -d package/
+  unzip -o package/ore-server-linux-x86-64-*.*.* -d package/
 
   # need to install ORE-server and can use usually user.
   chmod 755 /opt/oracle/product/18c/dbhomeXE/bin/ORE
@@ -172,10 +191,10 @@ END
   # install ROracle library
   if ls -1 /vagrant_oracle_dev_setup/package/ore-supporting-linux-x86-64-*.*.* > /dev/null; then
 
-    yum -y install cairo-devel 
-    yum -y install libpng-devel
+    dnf -y install cairo-devel 
+    dnf -y install libpng-devel
 
-    unzip package/ore-supporting-linux-x86-64-*.*.* -d package/
+    unzip -o package/ore-supporting-linux-x86-64-*.*.* -d package/
 
     R CMD INSTALL package/supporting/Cairo_*.*-*_R_x86_64-unknown-linux-gnu.tar.gz  
     R CMD INSTALL package/supporting/DBI_*.*-*_R_x86_64-unknown-linux-gnu.tar.gz  
@@ -186,13 +205,6 @@ END
     R CMD INSTALL package/supporting/statmod_*.*.*_R_x86_64-unknown-linux-gnu.tar.gz  
 
   fi
-#   # install additionnal library for using ORE.
-#   R --no-save << END
-#   # deceide library load.
-#   options(repos="https://cran.ism.ac.jp/")
-#   install.packages("png", dependencies = TRUE)
-#   install.packages("DBI", dependencies = TRUE)
-#   install.packages("ROracle", dependencies = TRUE)
   
 # END
 
@@ -204,7 +216,8 @@ END
   GRANT CREATE SESSION to rqsys;
 END
   # 接続確認
-  R --no-save << END
+  ORE --no-save << END
+  library(ORE)
   ore.connect("rqsys", password="$RQSYS_PASSWORD", conn_string="$PDB_INSTANCE", all=TRUE)
   ore.is.connected()
 END
@@ -330,12 +343,13 @@ su - vagrant -c 'echo "" >> ~/bash_profile'
 # you select branch version the same with oracle database version.
 ORACLE_VERSION=18c
 
-git clone https://github.com/oracle/db-sample-schemas.git -b v${ORACLE_VERSION}
+# sample respository is huge. get recent coomit only.
+git clone --depth 1 https://github.com/oracle/db-sample-schemas.git -b v${ORACLE_VERSION}
 cd db-sample-schemas/
 perl -p -i.bak -e 's#__SUB__CWD__#'$(pwd)'#g' *.sql */*.sql */*.dat 
 sqlplus system/${ORACLE_PASSWORD}@${PDB_INSTANCE} @mksample $ORACLE_PASSWORD syspw hrpw oepw pmpw ixpw shpw bipw users temp $HOME/dbsamples.log $PDB_INSTANCE
 cd ../
-
+rm -r db-sample-schemas
 
 # you dont use production vironment.
 # https://github.com/oracle/oracle-db-tools/tree/master/ords
@@ -363,81 +377,75 @@ COMMIT;
 END
 
 # golang,phpは共有ライブラリのコンパイルが必要なため下のようにする必要がある。
-echo '# oracle connect for golang,php' >> ~/.bash_profile
-echo export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$ORACLE_HOME/lib >> ~/.bash_profile
-echo '' >> ~/.bash_profile
+# echo '# oracle connect for golang,php' >> ~/.bash_profile
+# echo export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$ORACLE_HOME/lib >> ~/.bash_profile
+# echo '' >> ~/.bash_profile
 
-# libclntsh.soをinstantclientと同じディレクトリに持ってくる。
-ln -s $ORACLE_HOME/lib/libclntsh.so $ORACLE_HOME
+# # libclntsh.soをinstantclientと同じディレクトリに持ってくる。
+# ln -s $ORACLE_HOME/lib/libclntsh.so $ORACLE_HOME
 
-yum -y install systemtap-sdt-devel
+# dnf -y install systemtap-sdt-devel
 
-echo '# oracle connect for php' >> ~/.bash_profile
-echo 'export PHP_DTRACE=yes' >> ~/.bash_profile
-echo '' >> ~/.bash_profile
+# echo '# oracle connect for php' >> ~/.bash_profile
+# echo 'export PHP_DTRACE=yes' >> ~/.bash_profile
+# echo '' >> ~/.bash_profile
 
-source ~/.bash_profile
+# source ~/.bash_profile
 
-# phpは手動で作業。ソースコードをダウンロードしてビルドする。
-mkdir /usr/local/src/php_oci8
-cd /usr/local/src/php_oci8
-yumdownloader --source php
-source_rpm=$(ls -1 | grep php-7)
-source_name=$(echo $source_rpm | sed 's/\.src\.rpm//')
-rpm2cpio $source_rpm > ${source_name}.cpio
-cpio -i *.xz < ${source_name}.cpio
-source_xz=$(ls -1 | grep php-7 | grep xz)
-tar xf $source_xz
-source_dir=$(ls -d */ | grep php-7)
+# # phpは手動で作業。ソースコードをダウンロードしてビルドする。
+# mkdir /usr/local/src/php_oci8
+# cd /usr/local/src/php_oci8
+# yumdownloader --source php
+# source_rpm=$(ls -1 | grep php-7)
+# source_name=$(echo $source_rpm | sed 's/\.src\.rpm//')
+# rpm2cpio $source_rpm > ${source_name}.cpio
+# cpio -i *.xz < ${source_name}.cpio
+# source_xz=$(ls -1 | grep php-7 | grep xz)
+# tar xf $source_xz
+# source_dir=$(ls -d */ | grep php-7)
 
-cd $source_dir/ext/oci8
-phpize
-./configure --with-oci8=shared,instantclient,$ORACLE_HOME
-make
-make install 
+# cd $source_dir/ext/oci8
+# phpize
+# ./configure --with-oci8=shared,instantclient,$ORACLE_HOME
+# make
+# make install 
 
-cd $source_dir/ext/pdo_oci
-phpize
-./configure --with-pdo_oci=shared,instantclient,$ORACLE_HOME
-make
-make install 
+# cd $source_dir/ext/pdo_oci
+# phpize
+# ./configure --with-pdo_oci=shared,instantclient,$ORACLE_HOME
+# make
+# make install 
 
-# extensionをphp.iniに追加してoci8を有効にする。
-echo "" >> /etc/php.ini
-echo ";this module is needed to connect to oracle" >> /etc/php.ini
-echo extension=oci8.so >> /etc/php.ini
-echo "" >> /etc/php.ini
+# # extensionをphp.iniに追加してoci8を有効にする。
+# echo "" >> /etc/php.ini
+# echo ";this module is needed to connect to oracle" >> /etc/php.ini
+# echo extension=oci8.so >> /etc/php.ini
+# echo "" >> /etc/php.ini
 
-# library  
+# # library  
 
-# cp ~/lib/oci8.pc /usr/local/lib/
-echo '# set pkg_config_path for compiling library' >> ~/.bash_profile
-echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile
-echo "" >> >> ~/.bash_profile
+# # cp ~/lib/oci8.pc /usr/local/lib/
+# echo '# set pkg_config_path for compiling library' >> ~/.bash_profile
+# echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile
+# echo "" >> ~/.bash_profile
 
-su - vagrant 'echo "# set pkg_config_path for compiling library" >> ~/.bash_profile'
-su - vagrant 'echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile'
-su - vagrant 'echo "" >> ~/.bash_profile'
+# su - vagrant 'echo "# set pkg_config_path for compiling library" >> ~/.bash_profile'
+# su - vagrant 'echo export PKG_CONFIG_PATH=\$PKG_CONFIG_PATH:/usr/local/lib >> ~/.bash_profile'
+# su - vagrant 'echo "" >> ~/.bash_profile'
 
-# golang,phpからoracleに接続するための設定
-# mkdir ~/lib
-cat << END >  /usr/local/lib/oci8.pc
-prefixdir=$ORACLE_HOME
-libdir=\${prefixdir}/lib
-includedir=\${prefixdir}/rdbms/public
-Name: OCI
-Description: Oracle database driver
-Version: 18c
-Libs: -L\${libdir} -lclntsh
-Cflags: -I\${includedir}
-END
+# # golang,phpからoracleに接続するための設定
+# # mkdir ~/lib
+# cat << END >  /usr/local/lib/oci8.pc
+# prefixdir=$ORACLE_HOME
+# libdir=\${prefixdir}/lib
+# includedir=\${prefixdir}/rdbms/public
+# Name: OCI
+# Description: Oracle database driver
+# Version: 18c
+# Libs: -L\${libdir} -lclntsh
+# Cflags: -I\${includedir}
+# END
 
-# module install 確認
-if php -m | grep oci8 > /dev/null; then
-  echo "oci8 install success!"
-else
-  # echo "oci8 installed failed." 2>
-fi
 
 # ファイルリスト更新
 updatedb
