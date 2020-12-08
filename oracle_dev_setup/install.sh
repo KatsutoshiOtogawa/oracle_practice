@@ -334,9 +334,9 @@ cp $ORACLE_HOME/network/admin/tnsnames.ora ./
 cp /opt/oracle/product/18c/dbhomeXE/network/admin/tnsnames.ora /home/vagrant/
 chown vagrant:vagrant /home/vagrant/tnsnames.ora
 # set TNS_ADMIN. this environment is used by sqlplus for searching tnsnames.ora.
-su - vagrant -c 'echo "# set tnsnames.ora location." >> ~/bash_profile' 
-su - vagrant -c 'echo export TNS_ADMIN=\$HOME >> ~/bash_profile'
-su - vagrant -c 'echo "" >> ~/bash_profile'
+su - vagrant -c 'echo "# set tnsnames.ora location." >> ~/.bash_profile' 
+su - vagrant -c 'echo export TNS_ADMIN=\$HOME >> ~/.bash_profile'
+su - vagrant -c 'echo "" >> ~/.bash_profile'
 
 # create sample from github
 # you want to know this script detail, go to https://github.com/oracle/db-sample-schemas.git
