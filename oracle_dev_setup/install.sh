@@ -35,6 +35,8 @@ echo 'export ORACLE_SID=XE'  >> ~/.bash_profile
 echo 'export ORAENV_ASK=NO'  >> ~/.bash_profile
 echo 'export ORACLE_HOME=/opt/oracle/product/18c/dbhomeXE' >> ~/.bash_profile
 echo 'export ORACLE_BASE=/opt/oracle' >> ~/.bash_profile
+echo export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/lib >> ~/.bash_profile
+echo export PATH=\$PATH:/usr/local/bin >> ~/.bash_profile
 echo export PATH=\$PATH:\$ORACLE_HOME/bin >> ~/.bash_profile
 echo export ORACLE_PASSWORD=$ORACLE_PASSWORD >> ~/.bash_profile
 echo '' >> ~/.bash_profile
@@ -49,15 +51,6 @@ source ~/.bash_profile
 
 #  you want to connect oracleDB, use XEPDB1 pragabble
 cat << END >> $ORACLE_HOME/network/admin/tnsnames.ora
-
-XE =
-  (DESCRIPTION =
-    (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))
-    (CONNECT_DATA =
-      (SERVER = DEDICATED)
-      (SERVICE_NAME = XE)
-    )
-  )
 
 ${PDB_INSTANCE} =
   (DESCRIPTION =
@@ -80,6 +73,8 @@ su - oracle -c 'echo export ORACLE_SID=XE >> ~/.bash_profile'
 su - oracle -c 'echo export ORAENV_ASK=NO >> ~/.bash_profile'
 su - oracle -c 'echo export ORACLE_HOME=/opt/oracle/product/18c/dbhomeXE >> ~/.bash_profile'
 su - oracle -c 'echo export ORACLE_BASE=/opt/oracle  >> ~/.bash_profile'
+su - oracle -c 'echo export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/lib >> ~/.bash_profile'
+su - oracle -c 'echo export PATH=\$PATH:/usr/local/bin >> ~/.bash_profile'
 su - oracle -c 'echo export PATH=\$PATH:\$ORACLE_HOME/bin >> ~/.bash_profile'
 su - oracle -c 'echo export ORACLE_PASSWORD=$ORACLE_PASSWORD >> ~/.bash_profile'
 su - oracle -c 'echo "" >> ~/.bash_profile'
@@ -120,7 +115,16 @@ su - vagrant -c 'echo "" >> ~/.bash_profile'
 # END
 
 # if you have oracle_java, install that,but you dont have that, install openjdk-11.
+if ls -1 /vagrant_oracle_dev_setup/package/sqlcl-*.*.*.*.*.zip > /dev/null; then
+  unzip -o package/sqlcl-*.*.*.*.*.zip -d package/
+  install package/sqlcl/bin/sql /usr/local/bin/sqlcl
+  mkdir /usr/local/lib/sqlcl/
+  cp -r package/sqlcl/lib/* /usr/local/lib/sqlcl/
+fi
+
+# if you have oracle_java, install that,but you dont have that, install openjdk-11.
 if ls -1 /vagrant_oracle_dev_setup/package/jdk-*.*.*_linux-x64_bin.rpm > /dev/null; then
+  yum -y remove openjdk
   yum -y localinstall package/jdk-*.*.*_linux-x64_bin.rpm
 fi
 
